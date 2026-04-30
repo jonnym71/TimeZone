@@ -1,0 +1,26 @@
+<main class="lost-container">
+  <div class="lost-clock" aria-hidden="true">
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="faceGrad" cx="0.35" cy="0.35">
+          <stop offset="0%" stop-color="#4d8bff"/>
+          <stop offset="60%" stop-color="#0057ff"/>
+          <stop offset="100%" stop-color="#003db3"/>
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="url(#faceGrad)" stroke="#ffffff" stroke-width="4"/>
+      <line x1="50" y1="6"  x2="50" y2="14" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="50" y1="86" x2="50" y2="94" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="6"  y1="50" x2="14" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="86" y1="50" x2="94" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+      <line class="clock-hand-h" x1="50" y1="55" x2="50" y2="32" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+      <line class="clock-hand-m" x1="50" y1="58" x2="50" y2="22" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="3" fill="#ffd24d"/>
+    </svg>
+  </div>
+
+  <div class="lost-code">404</div>
+  <h1 class="lost-title">Verloren in der Zeit?</h1>
+  <p class="lost-text">Diese Seite existiert nicht — vielleicht in einer anderen Zeitlinie. Lass uns dich zurück nach Hause schicken.</p>
+  <a routerLink="/" class="lost-cta">Zurück zur Hauptseite <span class="arrow" aria-hidden="true">→</span></a>
+</main>

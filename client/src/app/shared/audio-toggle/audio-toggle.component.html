@@ -1,0 +1,9 @@
+<button
+  class="audio-toggle"
+  [class.playing]="audio.playing()"
+  type="button"
+  [attr.aria-label]="audio.playing() ? 'Hintergrundmusik stoppen' : 'Hintergrundmusik abspielen'"
+  (click)="toggle()">
+  <span class="audio-icon-off" aria-hidden="true">🎵</span>
+  <span class="audio-icon-on" aria-hidden="true">🔊</span>
+</button>

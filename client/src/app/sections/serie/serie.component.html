@@ -1,0 +1,37 @@
+<section id="serie">
+  <app-admin-add-button wrapperClass="serie-add" [items]="addItems"></app-admin-add-button>
+  <div class="section-header">
+    <div class="section-label">Unsere Hauptserie</div>
+    <div class="serie-title">
+      <h2>Die TIME-Z<span class="tz-o"><span class="tz-o-text">O</span><svg viewBox="0 0 100 100" aria-hidden="true"><g class="tz-ticks"><line x1="50" y1="8" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="92"/><line x1="8" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="92" y2="50"/></g><line class="tz-hand tz-h" x1="50" y1="55" x2="50" y2="32"/><line class="tz-hand tz-m" x1="50" y1="58" x2="50" y2="22"/><line class="tz-hand tz-s" x1="50" y1="60" x2="50" y2="16"/><circle class="tz-dot" cx="50" cy="50" r="3"/></svg></span>NE Serie</h2>
+      <details #staffelDetails class="staffel-dropdown">
+        <summary>Staffel 1<span class="staffel-arrow">◀</span></summary>
+        <ul class="staffel-list">
+          @for (s of staffeln; track s; let i = $index) {
+            <li (click)="staffelClick(s, i)">{{ s }}</li>
+          }
+        </ul>
+      </details>
+    </div>
+    <p>Eine animierte Reise durch verschiedene Universen, Charaktere und Welten – aufwendig produziert, liebevoll erzählt.</p>
+  </div>
+  <div class="series-grid">
+    @for (ep of episodes; track ep.num; let i = $index) {
+      <div
+        class="episode-card"
+        [class.locked]="locked()"
+        [class.shake]="shaking() === i"
+        (click)="episodeClick(i)">
+        <div class="episode-thumb">
+          <div class="play-icon"></div>
+          <div class="episode-lock" aria-hidden="true">🔒</div>
+        </div>
+        <div class="episode-info">
+          <div class="episode-num">{{ ep.num }}</div>
+          <h3>{{ ep.title }}</h3>
+          <p>{{ ep.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

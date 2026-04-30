@@ -1,0 +1,34 @@
+<main class="legal-page">
+  <a routerLink="/" class="back-link"><span aria-hidden="true">←</span> Zurück zur Hauptseite</a>
+
+  <h1>Bildquellen</h1>
+  <p class="subtitle">Alle auf TIME-ZONE verwendeten Fotografien — Urheber, Lizenz und Originalquelle</p>
+
+  <div class="info-box">
+    Wir setzen ausschließlich Bilder ein, die uns die Urheber unter freier Lizenz (Creative Commons) zur Verfügung gestellt haben. Vielen Dank an alle Fotografinnen und Fotografen!
+  </div>
+
+  <div class="credits-list">
+    @for (credit of credits; track credit.src) {
+      <article class="credit-card">
+        <img [src]="credit.src" [alt]="credit.alt" loading="lazy">
+        <dl class="credit-meta">
+          <dt>Bild</dt>
+          <dd>{{ credit.bild }}</dd>
+          <dt>Urheber</dt>
+          <dd>
+            @if (credit.urheberLink) {
+              <a [href]="credit.urheberLink" target="_blank" rel="noopener">{{ credit.urheber }}</a>
+            } @else {
+              {{ credit.urheber }}
+            }
+          </dd>
+          <dt>Lizenz</dt>
+          <dd><a [href]="credit.lizenzLink" target="_blank" rel="noopener">{{ credit.lizenz }}</a></dd>
+          <dt>Quelle</dt>
+          <dd><a [href]="credit.quelleLink" target="_blank" rel="noopener">{{ credit.quelle }}</a>{{ credit.quelleExtra }}</dd>
+        </dl>
+      </article>
+    }
+  </div>
+</main>

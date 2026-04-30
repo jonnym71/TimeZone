@@ -1,0 +1,15 @@
+<button class="news-btn" type="button" aria-label="News öffnen" (click)="toggle($event)">
+  <span class="newspaper-icon" aria-hidden="true">📰</span>
+  <span>News</span>
+</button>
+
+<div class="news-panel" [class.open]="overlay.newsOpen()" role="dialog" aria-label="News">
+  <button class="news-close" type="button" aria-label="Schließen" (click)="close()">✕</button>
+  <div class="news-label">NEWS!</div>
+  <div class="news-headline">TIME-ZONE, eine neue Serie?</div>
+  <div class="news-body">
+    <span class="news-fact">Anscheinend gibt es eine neue Serie!</span>
+    <a class="news-link" href="#">Zum Artikel <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="news-date">27.04.2026</div>
+</div>

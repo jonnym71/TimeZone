@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(ng version *)",
+      "Bash(npm run *)",
+      "Bash(ng new *)",
+      "Bash(ng build *)",
+      "Bash(ng serve *)",
+      "Bash(curl -s -o /dev/null -w \"GET / -> %{http_code}\\\\n\" http://localhost:4200/)",
+      "Bash(curl -s -o /dev/null -w \"GET /impressum -> %{http_code}\\\\n\" http://localhost:4200/impressum)",
+      "Bash(curl -s -o /dev/null -w \"GET /datenschutz -> %{http_code}\\\\n\" http://localhost:4200/datenschutz)",
+      "Bash(curl -s -o /dev/null -w \"GET /bildquellen -> %{http_code}\\\\n\" http://localhost:4200/bildquellen)",
+      "Bash(curl -s -o /dev/null -w \"GET /irgendwas -> %{http_code}\\\\n\" http://localhost:4200/irgendwas)",
+      "Bash(curl -s -o /dev/null -w \"GET / -> %{http_code}\\\\n\" http://localhost:4201/)",
+      "Bash(curl -s -o /dev/null -w \"GET /impressum -> %{http_code}\\\\n\" http://localhost:4201/impressum)",
+      "Bash(curl -s -o /dev/null -w \"GET /datenschutz -> %{http_code}\\\\n\" http://localhost:4201/datenschutz)",
+      "Bash(curl -s -o /dev/null -w \"GET /bildquellen -> %{http_code}\\\\n\" http://localhost:4201/bildquellen)",
+      "Bash(curl -s -o /dev/null -w \"GET /xyz -> %{http_code}\\\\n\" http://localhost:4201/xyz)"
+    ]
+  }
+}

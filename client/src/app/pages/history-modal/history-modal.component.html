@@ -1,0 +1,21 @@
+<div class="history-page" [class.open]="overlay.historyOpen()" role="dialog" aria-label="HistoryFacts">
+  <button class="tabellen-back" type="button" (click)="close()">
+    <span class="back-arrow" aria-hidden="true">←</span> Zurück
+  </button>
+  <div class="history-page-content">
+    <h1 class="history-page-title">HistoryFacts</h1>
+    <p class="history-page-intro">Geschichte zum Anfassen. Die Momente, die unsere Welt geformt haben — fundiert recherchiert und spannend erzählt.</p>
+
+    <div class="history-facts-list">
+      @for (item of items; track item.year) {
+        <article class="hf-item">
+          <div class="hf-year">{{ item.year }}</div>
+          <div class="hf-text">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.text }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</div>

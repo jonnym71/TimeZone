@@ -1,0 +1,5 @@
+<div class="lock-toast" [class.show]="toast.visible()" role="alert" aria-live="polite">
+  <span class="lock-toast-icon" aria-hidden="true">🔒</span>
+  <span class="lock-toast-msg">Bitte melde dich an, um diese Folge zu sehen.</span>
+  <button class="lock-toast-btn" type="button" (click)="openLogin()">Anmelden</button>
+</div>

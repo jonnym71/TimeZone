@@ -1,0 +1,42 @@
+<nav>
+  <div class="user-cluster">
+    <button class="login-btn" type="button" (click)="loginClick()">
+      <svg class="login-avatar" viewBox="0 0 40 40" aria-hidden="true">
+        <defs>
+          <clipPath id="loginAvatarClip"><circle cx="20" cy="20" r="20"/></clipPath>
+        </defs>
+        <circle cx="20" cy="20" r="20" fill="#dfe5e7"/>
+        <g fill="#a3b1b6" clip-path="url(#loginAvatarClip)">
+          <circle cx="20" cy="15" r="5.5"/>
+          <path d="M 20 22 C 11 22 6 30 6 40 H 34 C 34 30 29 22 20 22 Z"/>
+        </g>
+      </svg>
+      <span class="login-label">{{ auth.user()?.username ?? 'Anmelden' }}</span>
+    </button>
+    @if (auth.loggedIn()) {
+      <button class="user-gear" type="button" aria-label="Profil-Menü öffnen" [class.active]="overlay.profileOpen()" (click)="gearClick($event)">⚙</button>
+    }
+  </div>
+
+  <div class="nav-container">
+    <a routerLink="/" class="logo">TIME-Z<span class="tz-o"><span class="tz-o-text">O</span><svg viewBox="0 0 100 100" aria-hidden="true"><g class="tz-ticks"><line x1="50" y1="8" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="92"/><line x1="8" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="92" y2="50"/></g><line class="tz-hand tz-h" x1="50" y1="55" x2="50" y2="32"/><line class="tz-hand tz-m" x1="50" y1="58" x2="50" y2="22"/><line class="tz-hand tz-s" x1="50" y1="60" x2="50" y2="16"/><circle class="tz-dot" cx="50" cy="50" r="3"/></svg></span>NE</a>
+    <ul class="nav-links">
+      <li><a routerLink="/" fragment="serie">Serie<span class="nav-tooltip">Unsere Hauptserie</span></a></li>
+      <li><a routerLink="/" fragment="tochterfirmen">Tochterfirmen<span class="nav-tooltip">Unsere Welten</span></a></li>
+      <li>
+        <a href="#" class="nav-icon-link" aria-label="Büro" (click)="openBuero($event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2.5" y="7" width="19" height="13.5" rx="2"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <path d="M2.5 13h19"/>
+            <rect x="10.5" y="11.5" width="3" height="3" rx="0.5" fill="currentColor"/>
+          </svg>
+          <span class="nav-tooltip">Büro</span>
+        </a>
+      </li>
+      <li><a routerLink="/" fragment="history">HistoryFacts<span class="nav-tooltip">Geschichte zum Anfassen</span></a></li>
+      <li><a href="#" (click)="openTabellen($event)">TIME-ZONE Tabellen<span class="nav-tooltip">Daten &amp; Diagramme</span></a></li>
+      <li><a routerLink="/" fragment="kontakt">Kontakt<span class="nav-tooltip">Schreib uns</span></a></li>
+    </ul>
+  </div>
+</nav>

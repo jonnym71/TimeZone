@@ -1,0 +1,10 @@
+<div class="admin-add-wrap" [class]="'admin-add-wrap ' + wrapperClass">
+  <button class="admin-add-btn" type="button" aria-label="Hinzufügen">+</button>
+  <div class="admin-add-menu">
+    <div class="admin-add-menu-inner">
+      @for (item of items; track item.action) {
+        <button type="button" class="admin-add-item" (click)="open(item.action, $event)">{{ item.label }}</button>
+      }
+    </div>
+  </div>
+</div>

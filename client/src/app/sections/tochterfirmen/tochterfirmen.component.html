@@ -1,0 +1,24 @@
+<section id="tochterfirmen" class="subsidiaries">
+  <div class="subsidiaries-inner">
+    <app-admin-add-button wrapperClass="tochter-add" [items]="addItems"></app-admin-add-button>
+    <app-news-panel></app-news-panel>
+
+    <div class="section-header">
+      <div class="section-label">Unsere Welten</div>
+      <h2>Tochterfirmen</h2>
+      <p>Unter dem Dach von TIME-ZONE entstehen vielfältige Projekte – von Reisen über Therapie bis hin zu Geschichte.</p>
+    </div>
+
+    <div class="sub-grid">
+      @for (sub of subsidiaries; track sub.title) {
+        <div class="sub-card">
+          <div class="sub-icon">{{ sub.icon }}</div>
+          <div class="sub-subtitle">{{ sub.subtitle }}</div>
+          <h3>{{ sub.title }}</h3>
+          <p>{{ sub.description }}</p>
+          <a href="#" class="sub-link" (click)="cardClick(sub.action, $event)">{{ sub.linkText }}</a>
+        </div>
+      }
+    </div>
+  </div>
+</section>

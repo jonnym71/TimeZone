@@ -1,0 +1,149 @@
+<div class="transat-page" [class.open]="overlay.transatOpen()" role="dialog" aria-label="TIME-ZONE TRANSAT">
+  <button class="tabellen-back" type="button" (click)="close()">
+    <span class="back-arrow" aria-hidden="true">←</span> Zurück
+  </button>
+  <div class="transat-content">
+    <h1 class="transat-title">TIME-ZONE TRANSAT</h1>
+    <p class="transat-subtitle">Reisen rund um den Globus</p>
+
+    <div class="plane-scene" aria-hidden="true">
+      <div class="plane-runway"></div>
+      <svg class="plane-svg" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 30 40 Q 32 32 42 32 L 145 32 Q 165 32 185 40 Q 165 48 145 48 L 42 48 Q 32 48 30 40 Z" fill="#ffffff" stroke="#5a606a" stroke-width="1.2"/>
+        <path d="M 35 40 L 25 16 L 50 32 L 50 40 Z" fill="#ffffff" stroke="#5a606a" stroke-width="1.2"/>
+        <path d="M 100 32 L 75 12 L 110 30 Z" fill="#c0c5d0" stroke="#5a606a" stroke-width="1.2"/>
+        <path d="M 100 48 L 75 68 L 110 50 Z" fill="#a0aec8" stroke="#5a606a" stroke-width="1.2"/>
+        <rect x="55" y="37" width="95" height="2.5" fill="#0057ff" rx="1"/>
+        <path d="M 165 35 Q 180 38 184 40 Q 180 42 165 45 Z" fill="#0057ff"/>
+        <text x="32" y="28" font-family="sans-serif" font-size="6" font-weight="700" fill="#0057ff">TZ</text>
+      </svg>
+    </div>
+
+    <form class="transat-form" autocomplete="off" (submit)="$event.preventDefault()">
+      <div class="transat-input-row">
+        <label for="transatFrom">Von</label>
+        <input
+          type="text"
+          id="transatFrom"
+          class="transat-input"
+          placeholder="z. B. Linz"
+          autocomplete="off"
+          [ngModel]="fromValue()"
+          (ngModelChange)="onFromInput($event)"
+          (focus)="onFromFocus()"
+          (blur)="onFromBlur()"
+          name="from">
+        <ul class="autocomplete-suggestions" [class.show]="fromFocus() && fromSugg().length > 0" role="listbox">
+          @for (loc of fromSugg(); track loc) {
+            <li
+              role="option"
+              (mousedown)="$event.preventDefault(); pickFrom(loc)">
+              @if (highlightedSuggestion(loc, fromValue()); as h) {
+                {{ h.before }}<span class="match">{{ h.match }}</span>{{ h.after }}
+              } @else {
+                {{ loc }}
+              }
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="transat-input-row">
+        <label for="transatTo">Nach</label>
+        <input
+          type="text"
+          id="transatTo"
+          class="transat-input"
+          placeholder="z. B. Graz"
+          autocomplete="off"
+          [ngModel]="toValue()"
+          (ngModelChange)="onToInput($event)"
+          (focus)="onToFocus()"
+          (blur)="onToBlur()"
+          name="to">
+        <ul class="autocomplete-suggestions" [class.show]="toFocus() && toSugg().length > 0" role="listbox">
+          @for (loc of toSugg(); track loc) {
+            <li
+              role="option"
+              (mousedown)="$event.preventDefault(); pickTo(loc)">
+              @if (highlightedSuggestion(loc, toValue()); as h) {
+                {{ h.before }}<span class="match">{{ h.match }}</span>{{ h.after }}
+              } @else {
+                {{ loc }}
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </form>
+
+    <div class="transat-result" [class.show]="connection() !== null" aria-live="polite">
+      @if (connection(); as c) {
+        @if (!c.ok) {
+          <div class="connection-error">
+            <strong>{{ c.errorMessage }}</strong>
+            @if (c.errorHint) {
+              <div class="error-hint">{{ c.errorHint }}</div>
+            }
+          </div>
+        } @else if (c.journey && c.from && c.to) {
+          <div class="connection-card" [class.expanded]="cardExpanded()">
+            <div class="connection-header">
+              <span class="conn-from">{{ c.from }}</span>
+              <span class="conn-arrow" aria-hidden="true">→</span>
+              <span class="conn-to">{{ c.to }}</span>
+            </div>
+            <p class="connection-text" [innerHTML]="legSummary(c.journey.legs[0])"></p>
+            <p class="connection-meta">{{ totalText(c.journey) }}</p>
+            <div class="connection-details">
+              <h4>Verbindung im Detail</h4>
+              <ol class="legs-list">
+                @for (leg of c.journey.legs; track $index; let i = $index) {
+                  <li class="leg-item" [class.leg-expanded]="legIsExpanded(i)">
+                    <button class="leg-num" type="button" [attr.aria-expanded]="legIsExpanded(i)" [attr.aria-label]="'Details für Etappe ' + (i + 1)" (click)="toggleLeg(i)">{{ i + 1 }}</button>
+                    <div class="leg-content">
+                      <div class="leg-route">
+                        <strong>{{ leg.from }}</strong>
+                        <span class="leg-time">{{ leg.depTime }}</span>
+                        → <strong>{{ leg.to }}</strong>
+                        <span class="leg-time">{{ leg.arrTime }}</span>
+                      </div>
+                      <div class="leg-info">
+                        <span class="leg-type-badge">{{ leg.type }}</span>
+                        <strong>{{ leg.line }}</strong> · {{ platformLabel(leg.type) }} <strong>{{ leg.platform }}</strong> · {{ legDurText(leg.durMin) }}
+                      </div>
+                      @if (leg.operator) {
+                        <div class="leg-extra">
+                          <div class="operator-row">
+                            <span class="operator-logo" [style.background]="leg.operator.bg" [style.color]="leg.operator.fg">{{ leg.operator.label }}</span>
+                            <span class="operator-name">{{ operatorName(leg) }}</span>
+                          </div>
+                          <div class="leg-extra-grid">
+                            <div class="leg-extra-item">
+                              <span class="leg-extra-label">Fahrzeug</span>
+                              <span class="leg-extra-value">{{ leg.vehicle }}</span>
+                            </div>
+                            <div class="leg-extra-item">
+                              <span class="leg-extra-label">Sitzplätze</span>
+                              <span class="leg-extra-value">ca. {{ leg.seats }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </li>
+                  @if (leg.transferAfter !== undefined) {
+                    <li class="transfer-note">
+                      <span class="transfer-icon" aria-hidden="true">⏱</span>
+                      {{ transferText(leg.transferAfter) }} Aufenthalt zum Umsteigen in <strong>{{ leg.to }}</strong>
+                    </li>
+                  }
+                }
+              </ol>
+            </div>
+            <button class="info-btn" type="button" aria-label="Details anzeigen" title="Details" [class.active]="cardExpanded()" (click)="toggleCard()">i</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
