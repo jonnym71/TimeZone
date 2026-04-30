@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 – Seite nicht gefunden | TIME-ZONE</title>
+  <meta name="theme-color" content="#0057ff">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230057ff' stroke='%23ffffff' stroke-width='4'/%3E%3Cline x1='50' y1='22' x2='50' y2='50' stroke='%23ffffff' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='68' y2='62' stroke='%23ffffff' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23ffffff'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --tz-blue: #0057ff;
+      --tz-blue-dark: #003db3;
+      --tz-blue-light: #4d8bff;
+      --tz-bg: #0a0e1a;
+      --tz-bg-soft: #121829;
+      --tz-text: #e8edf7;
+      --tz-text-soft: #a0aec8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(ellipse at top, rgba(0, 87, 255, 0.25), transparent 60%),
+        radial-gradient(ellipse at bottom, rgba(77, 139, 255, 0.15), transparent 60%),
+        var(--tz-bg);
+      color: var(--tz-text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: var(--tz-blue);
+      opacity: 0.12;
+      animation: float 18s infinite ease-in-out;
+      z-index: 0;
+    }
+
+    body::before { width: 320px; height: 320px; top: 8%; left: 6%; }
+    body::after  { width: 220px; height: 220px; bottom: 12%; right: 8%; animation-delay: -8s; }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(40px, -50px) scale(1.1); }
+      66%      { transform: translate(-30px, 30px) scale(0.9); }
+    }
+
+    .lost-container {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+    }
+
+    .lost-clock {
+      width: clamp(120px, 20vw, 180px);
+      height: clamp(120px, 20vw, 180px);
+      margin: 0 auto 2rem;
+      position: relative;
+    }
+
+    .lost-clock svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 30px rgba(0, 87, 255, 0.6));
+    }
+
+    .clock-hand-h {
+      transform-origin: 50px 50px;
+      animation: spin-hour 8s linear infinite;
+    }
+    .clock-hand-m {
+      transform-origin: 50px 50px;
+      animation: spin-min 3s linear infinite;
+    }
+
+    @keyframes spin-hour { to { transform: rotate(-720deg); } }
+    @keyframes spin-min  { to { transform: rotate(-1440deg); } }
+
+    .lost-code {
+      font-size: clamp(5rem, 18vw, 9rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      background: linear-gradient(135deg, var(--tz-blue-light), var(--tz-blue), #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 0.6rem;
+    }
+
+    .lost-title {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: white;
+      margin-bottom: 0.8rem;
+    }
+
+    .lost-text {
+      color: var(--tz-text-soft);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2.2rem;
+    }
+
+    .lost-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--tz-blue);
+      color: white;
+      text-decoration: none;
+      padding: 0.95rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      box-shadow: 0 6px 24px rgba(0, 87, 255, 0.5);
+      transition: transform 0.25s, box-shadow 0.25s, background 0.25s, gap 0.25s;
+    }
+
+    .lost-cta:hover {
+      background: var(--tz-blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(0, 87, 255, 0.7);
+      gap: 0.8rem;
+    }
+
+    .lost-cta .arrow {
+      transition: transform 0.25s;
+    }
+
+    .lost-cta:hover .arrow {
+      transform: translateX(4px);
+    }
+  </style>
+</head>
+<body>
+  <main class="lost-container">
+    <div class="lost-clock" aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="faceGrad" cx="0.35" cy="0.35">
+            <stop offset="0%" stop-color="#4d8bff"/>
+            <stop offset="60%" stop-color="#0057ff"/>
+            <stop offset="100%" stop-color="#003db3"/>
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="46" fill="url(#faceGrad)" stroke="#ffffff" stroke-width="4"/>
+        <line x1="50" y1="6"  x2="50" y2="14" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="50" y1="86" x2="50" y2="94" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="6"  y1="50" x2="14" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="86" y1="50" x2="94" y2="50" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+        <line class="clock-hand-h" x1="50" y1="55" x2="50" y2="32" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+        <line class="clock-hand-m" x1="50" y1="58" x2="50" y2="22" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="3" fill="#ffd24d"/>
+      </svg>
+    </div>
+
+    <div class="lost-code">404</div>
+    <h1 class="lost-title">Verloren in der Zeit?</h1>
+    <p class="lost-text">Diese Seite existiert nicht — vielleicht in einer anderen Zeitlinie. Lass uns dich zurück nach Hause schicken.</p>
+    <a href="index.html" class="lost-cta">Zurück zur Hauptseite <span class="arrow" aria-hidden="true">→</span></a>
+  </main>
+</body>
+</html>

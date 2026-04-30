@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bildquellen – TIME-ZONE</title>
+  <meta name="description" content="Bildquellen und Lizenzen der auf TIME-ZONE verwendeten Fotografien">
+  <meta name="theme-color" content="#0057ff">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230057ff' stroke='%23ffffff' stroke-width='4'/%3E%3Cline x1='50' y1='22' x2='50' y2='50' stroke='%23ffffff' stroke-width='6' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='68' y2='62' stroke='%23ffffff' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='3' fill='%23ffffff'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --tz-blue: #0057ff;
+      --tz-blue-light: #4d8bff;
+      --tz-bg: #0a0e1a;
+      --tz-bg-soft: #121829;
+      --tz-text: #e8edf7;
+      --tz-text-soft: #a0aec8;
+      --tz-card: #161c2e;
+      --tz-border: #1f2740;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(0, 87, 255, 0.14), transparent 60%),
+        radial-gradient(circle at center, rgba(77, 139, 255, 0.16) 1.4px, transparent 1.6px),
+        var(--tz-bg);
+      background-size: auto, 38px 38px, auto;
+      background-attachment: fixed, fixed, scroll;
+      color: var(--tz-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .legal-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 2rem 3rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--tz-bg-soft);
+      border: 1px solid var(--tz-border);
+      color: var(--tz-text);
+      padding: 0.55rem 1.2rem 0.55rem 0.9rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s, gap 0.2s;
+    }
+
+    .back-link:hover {
+      background: var(--tz-card);
+      border-color: var(--tz-blue);
+      transform: translateY(-1px);
+      gap: 0.7rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 0.3rem;
+      background: linear-gradient(135deg, var(--tz-blue-light), var(--tz-blue), #ffffff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--tz-text-soft);
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+    }
+
+    .info-box {
+      background: linear-gradient(135deg, var(--tz-card), var(--tz-bg-soft));
+      border: 1px solid var(--tz-border);
+      border-left: 4px solid var(--tz-blue);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin: 1.5rem 0 2rem;
+      font-size: 0.88rem;
+      color: var(--tz-text-soft);
+    }
+
+    .credits-list {
+      display: grid;
+      gap: 1.2rem;
+    }
+
+    .credit-card {
+      background: linear-gradient(135deg, var(--tz-card), var(--tz-bg-soft));
+      border: 1px solid var(--tz-border);
+      border-left: 4px solid var(--tz-blue);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    .credit-card img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #1a2540;
+    }
+
+    .credit-meta dt {
+      font-size: 0.7rem;
+      color: var(--tz-text-soft);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      margin-top: 0.5rem;
+    }
+
+    .credit-meta dt:first-child { margin-top: 0; }
+
+    .credit-meta dd {
+      font-size: 0.92rem;
+      color: var(--tz-text);
+      margin: 0.15rem 0 0.4rem;
+    }
+
+    .credit-meta a {
+      color: var(--tz-blue-light);
+      text-decoration: underline;
+    }
+
+    .credit-meta a:hover { color: white; }
+
+    @media (max-width: 600px) {
+      .credit-card { grid-template-columns: 1fr; }
+      .credit-card img { height: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="legal-page">
+    <a href="index.html" class="back-link"><span aria-hidden="true">←</span> Zurück zur Hauptseite</a>
+
+    <h1>Bildquellen</h1>
+    <p class="subtitle">Alle auf TIME-ZONE verwendeten Fotografien — Urheber, Lizenz und Originalquelle</p>
+
+    <div class="info-box">
+      Wir setzen ausschließlich Bilder ein, die uns die Urheber unter freier Lizenz (Creative Commons) zur Verfügung gestellt haben. Vielen Dank an alle Fotografinnen und Fotografen!
+    </div>
+
+    <div class="credits-list">
+
+      <article class="credit-card">
+        <img src="images/os-a320.jpg" alt="Airbus A320 OE-LBO der Austrian Airlines" loading="lazy">
+        <dl class="credit-meta">
+          <dt>Bild</dt>
+          <dd>Airbus A320 (OE-LBO) der Austrian Airlines</dd>
+          <dt>Urheber</dt>
+          <dd><a href="https://aeroprints.com" target="_blank" rel="noopener">aeroprints.com</a></dd>
+          <dt>Lizenz</dt>
+          <dd><a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC-BY-SA 3.0 Unported</a></dd>
+          <dt>Quelle</dt>
+          <dd><a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> · VRT-Ticket #2013031510006025</dd>
+        </dl>
+      </article>
+
+      <article class="credit-card">
+        <img src="images/af-a320.jpg" alt="Airbus A320 F-GKXJ der Air France" loading="lazy">
+        <dl class="credit-meta">
+          <dt>Bild</dt>
+          <dd>Airbus A320 (F-GKXJ) der Air France in Paris-Lackierung</dd>
+          <dt>Urheber</dt>
+          <dd>[Wikimedia-Autor – wird ergänzt]</dd>
+          <dt>Lizenz</dt>
+          <dd><a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener">CC-BY-SA 2.0 Generic</a></dd>
+          <dt>Quelle</dt>
+          <dd><a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a></dd>
+        </dl>
+      </article>
+
+      <article class="credit-card">
+        <img src="images/lh-a320.jpg" alt="Airbus A320 D-AIPF der Lufthansa" loading="lazy">
+        <dl class="credit-meta">
+          <dt>Bild</dt>
+          <dd>Airbus A320 (D-AIPF) der Lufthansa in München</dd>
+          <dt>Urheber</dt>
+          <dd><a href="https://commons.wikimedia.org/wiki/User:Julian_Herzog" target="_blank" rel="noopener">Julian Herzog</a></dd>
+          <dt>Lizenz</dt>
+          <dd><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0 International</a></dd>
+          <dt>Quelle</dt>
+          <dd><a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a></dd>
+        </dl>
+      </article>
+
+    </div>
+  </main>
+</body>
+</html>
