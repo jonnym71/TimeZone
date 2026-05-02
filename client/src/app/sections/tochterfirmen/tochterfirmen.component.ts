@@ -94,7 +94,7 @@ export class TochterfirmenComponent {
       title: 'TIME-ZONE Sound',
       description: 'Atmosphärische Klangwelten und Soundtracks aus dem TIME-ZONE-Universum – komponiert mit Liebe zum Detail.',
       linkText: 'Reinhören →',
-      action: 'more',
+      action: 'music',
     },
     {
       icon: '📚',
@@ -124,6 +124,7 @@ export class TochterfirmenComponent {
     if (action === 'transat') this.overlay.openTransat();
     else if (action === 'therapie') this.overlay.open('TIME-ZONE Therapie', 'therapie');
     else if (action === 'history') this.overlay.openHistory();
+    else if (action === 'music') this.audio.playRadetzkymarsch();
     else this.overlay.open('Mehr Informationen', 'coming-soon');
   }
 
