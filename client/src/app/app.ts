@@ -10,6 +10,7 @@ import { LockToastComponent } from './shared/lock-toast/lock-toast.component';
 import { TabellenPageComponent } from './pages/tabellen/tabellen-page.component';
 import { HistoryModalComponent } from './pages/history-modal/history-modal.component';
 import { TransatPageComponent } from './pages/transat/transat-page.component';
+import { GutscheinePageComponent } from './pages/gutscheine/gutscheine-page.component';
 import { OverlayService } from './services/overlay.service';
 
 @Component({
@@ -27,6 +28,7 @@ import { OverlayService } from './services/overlay.service';
     TabellenPageComponent,
     HistoryModalComponent,
     TransatPageComponent,
+    GutscheinePageComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -39,6 +41,7 @@ export class App {
     if (this.overlay.tabellenOpen()) this.overlay.closeTabellen();
     else if (this.overlay.historyOpen()) this.overlay.closeHistory();
     else if (this.overlay.transatOpen()) this.overlay.closeTransat();
+    else if (this.overlay.gutscheineOpen()) this.overlay.closeGutscheine();
     else if (this.overlay.state().open) this.overlay.close();
   }
 }

@@ -7,11 +7,11 @@
   aria-modal="true"
   (click)="onBackdropClick($event)">
 
-  <button class="coming-soon-close" type="button" aria-label="Schließen" (click)="close()">✕</button>
+  <button class="coming-soon-close" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">✕</button>
 
   <div class="cs-mode cs-mode-coming-soon">
     <div class="hourglass" aria-hidden="true">⏳</div>
-    <div class="coming-soon-text">coming soon...</div>
+    <div class="coming-soon-text">{{ 'cs.comingSoon' | t }}</div>
   </div>
 
   <div class="cs-mode cs-mode-not-yet">
@@ -28,20 +28,31 @@
       <circle cx="110" cy="135" r="74" fill="none" stroke="rgba(0,87,255,0.18)" stroke-width="2"/>
       <text class="alarm-count" x="110" y="162" text-anchor="middle" font-size="78">{{ alarmCount() }}</text>
     </svg>
-    <div class="not-yet-text">NOT YET AVAILABLE</div>
-    <div class="not-yet-de">(noch nicht verfügbar)</div>
+    <div class="not-yet-text">{{ 'cs.notYet' | t }}</div>
+    <div class="not-yet-de">{{ 'cs.notYetSub' | t }}</div>
+  </div>
+
+  <div class="cs-mode cs-mode-rank-required">
+    <div class="rank-lock" aria-hidden="true">🔒</div>
+    <div class="rank-required-text">{{ 'cs.rankRequired' | t }}</div>
+    @if (requiredRank(); as r) {
+      <div class="rank-required-badge" [style.--rank-color]="r.color">
+        <span class="rank-dot" [style.background]="r.color"></span>
+        <span class="rank-name">{{ r.key }}</span>
+      </div>
+    }
   </div>
 
   <div class="cs-mode cs-mode-therapie">
     <div class="speech-bubble">
-      <h3>Schreiben Sie uns eine E-Mail</h3>
-      <p>Es geht Ihnen gleich besser.</p>
-      <a class="speech-cta" href="mailto:hello@timezone.com">E-Mail verfassen</a>
+      <h3>{{ 'cs.therapie.title' | t }}</h3>
+      <p>{{ 'cs.therapie.text' | t }}</p>
+      <a class="speech-cta" href="mailto:hello@timezone.com">{{ 'cs.therapie.cta' | t }}</a>
     </div>
   </div>
 
   <div class="cs-mode cs-mode-login">
-    <div class="login-title">Anmelden</div>
+    <div class="login-title">{{ 'cs.signin' | t }}</div>
     <form
       class="login-form"
       id="loginForm"
@@ -56,48 +67,48 @@
           type="email"
           class="login-input"
           id="loginEmail"
-          placeholder="Example.Email.com"
+          [placeholder]="'cs.email.placeholder' | t"
           required
           [ngModel]="emailValue()"
           (ngModelChange)="emailValue.set($event)"
           name="email">
-        <button type="button" class="input-enter" aria-label="Bestätigen" (click)="triggerSubmit()">↵</button>
+        <button type="button" class="input-enter" [attr.aria-label]="'common.save' | t" (click)="triggerSubmit()">↵</button>
       </div>
       <div class="login-feedback">
-        <p class="feedback-msg">Sie sollten bald eine neue E-mail bekommen.</p>
-        <p class="demo-code-hint">Demo: <code>{{ demoCode() }}</code></p>
-        <p class="feedback-hint">Noch keine bekommen <span class="hint-arrow" aria-hidden="true">↓</span></p>
+        <p class="feedback-msg">{{ 'cs.feedbackMsg' | t }}</p>
+        <p class="demo-code-hint">{{ 'cs.demo' | t }} <code>{{ demoCode() }}</code></p>
+        <p class="feedback-hint">{{ 'cs.feedbackHint' | t }} <span class="hint-arrow" aria-hidden="true">↓</span></p>
         <button
           type="button"
           class="resend-btn"
           [class.sent]="resendSent()"
-          (click)="resend()">{{ resendSent() ? 'Erneut gesendet ✓' : 'Erneut versuchen' }}</button>
+          (click)="resend()">{{ resendSent() ? ('cs.resendSent' | t) : ('cs.resend' | t) }}</button>
       </div>
       <div class="login-row login-row-code">
         <input
           type="text"
           class="login-input login-code"
           id="loginCode"
-          placeholder="Hier Code eingeben"
+          [placeholder]="'cs.code.placeholder' | t"
           maxlength="6"
           inputmode="numeric"
           autocomplete="one-time-code"
           [ngModel]="codeValue()"
           (ngModelChange)="codeValue.set($event)"
           name="code">
-        <button type="button" class="input-enter" aria-label="Bestätigen" (click)="triggerSubmit()">↵</button>
+        <button type="button" class="input-enter" [attr.aria-label]="'common.save' | t" (click)="triggerSubmit()">↵</button>
       </div>
-      <button type="submit" class="login-submit">Anmelden</button>
+      <button type="submit" class="login-submit">{{ 'cs.signin' | t }}</button>
       <div class="login-success">
         <div class="success-check" aria-hidden="true">✓</div>
-        <p class="success-msg success-msg-default">Herzlichen Glückwunsch,<br>hier ist ihr neuer<br><span class="success-brand">TIME-ZONE</span> Account.</p>
-        <p class="success-msg success-msg-admin">Hallo Admin,<br>willkommen zurück bei<br><span class="success-brand">TIME-ZONE</span>.</p>
+        <p class="success-msg success-msg-default">{{ 'cs.success.default' | t }}</p>
+        <p class="success-msg success-msg-admin">{{ 'cs.success.admin' | t }}</p>
       </div>
     </form>
   </div>
 
   <div class="coming-soon-sub">{{ state().label }}</div>
   <button class="coming-soon-return" type="button" (click)="close()">
-    <span class="arrow" aria-hidden="true">←</span> Zurück zur Hauptseite
+    <span class="arrow" aria-hidden="true">←</span> {{ 'cs.return' | t }}
   </button>
 </div>

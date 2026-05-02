@@ -1,6 +1,6 @@
 <div class="tabellen-page" [class.open]="overlay.tabellenOpen()" role="dialog" aria-label="TIME-ZONE Tabellen">
   <button class="tabellen-back" type="button" (click)="close()">
-    <span class="back-arrow" aria-hidden="true">←</span> Zurück
+    <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
   </button>
   <div class="samuel-easter-egg" [class.show]="samuelShown()" [attr.aria-hidden]="!samuelShown()">
     <div class="heart-wrapper">
@@ -32,22 +32,22 @@
       <input
         type="text"
         class="tabellen-search"
-        placeholder="🔍  Search"
+        [placeholder]="'🔍  ' + ('tabellen.search' | t)"
         autocomplete="off"
         [ngModel]="searchValue()"
         (ngModelChange)="searchValue.set($event)"
         (keydown)="onSearchKeydown($event)"
         name="tabellenSearch">
       <button type="button" class="search-enter-btn" (click)="onEnterClick()">
-        <span>Enter</span>
+        <span>{{ 'tabellen.enter' | t }}</span>
         <span class="enter-arrow" aria-hidden="true">↵</span>
       </button>
     </div>
 
     <div class="chart-container" [class.hidden]="chartHidden()" [attr.data-tick]="animateTick()">
-      <div class="chart-title">Beliebtheit von TIME-ZONE</div>
-      <div class="chart-subtitle">2020 – 2026</div>
-      <svg class="popularity-chart" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Beliebtheit von TIME-ZONE 2020 bis 2026">
+      <div class="chart-title">{{ 'tabellen.chartTitle' | t }}</div>
+      <div class="chart-subtitle">{{ 'tabellen.chartSubtitle' | t }}</div>
+      <svg class="popularity-chart" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" [attr.aria-label]="'tabellen.chartAria' | t">
         <defs>
           <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#4d8bff" stop-opacity="0.45"/>
@@ -101,7 +101,7 @@
       </svg>
       <div class="chart-legend">
         <span class="legend-dot" aria-hidden="true"></span>
-        <span>Beliebtheits-Score (0 – 100)</span>
+        <span>{{ 'tabellen.legend' | t }}</span>
       </div>
     </div>
   </div>

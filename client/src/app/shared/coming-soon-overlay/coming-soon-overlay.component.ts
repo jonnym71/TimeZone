@@ -2,18 +2,26 @@ import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OverlayService } from '../../services/overlay.service';
 import { AuthService } from '../../services/auth.service';
+import { RanksService } from '../../services/ranks.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-coming-soon-overlay',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './coming-soon-overlay.component.html',
 })
 export class ComingSoonOverlayComponent implements OnDestroy {
   private overlayService = inject(OverlayService);
   private auth = inject(AuthService);
+  private ranks = inject(RanksService);
 
   readonly state = this.overlayService.state;
+
+  readonly requiredRank = computed(() => {
+    const key = this.state().requiredRank;
+    return key ? this.ranks.ranks.find(r => r.key === key) ?? null : null;
+  });
 
   readonly alarmCount = signal(10);
   private countdownTimer: number | null = null;

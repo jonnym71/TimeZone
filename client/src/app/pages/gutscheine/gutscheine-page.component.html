@@ -1,0 +1,117 @@
+<div class="gutscheine-page" [class.open]="overlay.gutscheineOpen()" role="dialog" aria-label="TIME-ZONE Gutscheine">
+  <button class="tabellen-back" type="button" (click)="close()">
+    <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+  </button>
+
+  <div class="gutscheine-content">
+    <h1 class="gutscheine-title">{{ 'gutscheine.title' | t }}</h1>
+    <p class="gutscheine-intro">{{ 'gutscheine.intro' | t }}</p>
+
+    <div class="gutschein-grid">
+      @for (v of vouchers; track v.value) {
+        <article class="gutschein-card">
+          <div class="gutschein-ribbon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" class="gutschein-icon">
+              <rect x="6" y="18" width="52" height="34" rx="4" fill="#0057ff" stroke="#4d8bff" stroke-width="2"/>
+              <path d="M32 18 V52" stroke="#fff" stroke-width="2" stroke-dasharray="3 3"/>
+              <path d="M22 18 C 22 10, 32 8, 32 18 C 32 8, 42 10, 42 18 Z" fill="#ff8a5b" stroke="#ffb88a" stroke-width="2"/>
+              <circle cx="32" cy="35" r="4.5" fill="#fff"/>
+              <text x="32" y="37.5" text-anchor="middle" font-family="sans-serif" font-size="6" font-weight="700" fill="#0057ff">TZ</text>
+            </svg>
+          </div>
+          <div class="gutschein-value">{{ formatEur(v.value) }}</div>
+          <div class="gutschein-label">{{ 'gutscheine.value' | t }}</div>
+          <div class="gutschein-price-row">
+            <span class="gutschein-price-label">{{ 'gutscheine.price' | t }}</span>
+            <span class="gutschein-price">{{ formatEur(v.price) }}</span>
+          </div>
+          <div class="gutschein-actions">
+            <button type="button" class="btn btn-primary gutschein-buy" (click)="buyForSelf(v)">{{ 'gutscheine.buyForSelf' | t }}</button>
+            <button type="button" class="btn btn-outline gutschein-buy" (click)="giftVoucher(v)">{{ 'gutscheine.gift' | t }}</button>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+
+  @if (showWarning()) {
+    <div class="gutschein-warning-overlay" role="alertdialog" aria-modal="true" aria-labelledby="gutscheinWarnTitle" (click)="onWarningBackdropClick($event)">
+      <div class="gutschein-warning">
+        <div class="gutschein-warning-badge" aria-hidden="true">⚠️</div>
+        <h2 id="gutscheinWarnTitle" class="gutschein-warning-title" [innerHTML]="'gw.title' | t"></h2>
+        <p class="gutschein-warning-line gw-strong" [innerHTML]="'gw.line1' | t"></p>
+        <p class="gutschein-warning-line" [innerHTML]="'gw.line2' | t"></p>
+        <p class="gutschein-warning-line">{{ 'gw.line3' | t }}</p>
+        <p class="gutschein-warning-line gw-tiny">{{ 'gw.tiny' | t }}</p>
+        <div class="gutschein-warning-actions">
+          <button type="button" class="btn btn-outline" (click)="dismissWarning()">{{ 'common.cancel' | t }}</button>
+          <button type="button" class="btn btn-primary" (click)="confirmPurchase()">{{ (mode() === 'self' ? 'gw.confirmSelf' : 'gw.confirmGift') | t }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showGiftForm()) {
+    <div class="firma-add-overlay" role="dialog" aria-modal="true" [attr.aria-label]="'gf.title' | t" (click)="onGiftFormBackdropClick($event)">
+      <form class="firma-add-form gutschein-gift-form" autocomplete="off" (submit)="submitGift($event)">
+        <button type="button" class="firma-add-close" [attr.aria-label]="'common.close' | t" (click)="closeGiftForm()">✕</button>
+        <h3>{{ 'gf.title' | t }}</h3>
+        @if (pendingVoucher(); as pv) {
+          <p class="gutschein-gift-summary" [innerHTML]="'gf.summary' | t : { amount: formatEur(pv.value) }"></p>
+        }
+
+        <label class="firma-add-row">
+          <span>{{ 'gf.account' | t }} <em>*</em></span>
+          <input
+            type="email"
+            class="firma-add-input"
+            [class.input-error]="emailError()"
+            [placeholder]="'gf.account.placeholder' | t"
+            required
+            [ngModel]="recipientEmail()"
+            (ngModelChange)="recipientEmail.set($event); emailError.set(false)"
+            name="recipientEmail">
+          @if (emailError()) {
+            <span class="firma-add-error">{{ 'gf.invalidEmail' | t }}</span>
+          }
+        </label>
+
+        <label class="firma-add-row">
+          <span>{{ 'gf.name' | t }} <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            [placeholder]="'gf.name.placeholder' | t"
+            required
+            [ngModel]="recipientName()"
+            (ngModelChange)="recipientName.set($event)"
+            name="recipientName">
+        </label>
+
+        <p class="gutschein-gift-hint">{{ 'gf.hint' | t }}</p>
+
+        <div class="firma-add-actions">
+          <button type="button" class="btn btn-outline" (click)="closeGiftForm()">{{ 'common.cancel' | t }}</button>
+          <button type="submit" class="btn btn-primary">{{ 'gf.send' | t }}</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  @if (showSuccess() && successMessage(); as ok) {
+    <div class="gutschein-success-overlay" role="dialog" aria-modal="true" aria-label="Gutschein gesendet" (click)="onSuccessBackdropClick($event)">
+      <div class="gutschein-success">
+        <div class="gutschein-success-badge" aria-hidden="true">🎁</div>
+        <h2 class="gutschein-success-title">{{ (ok.selfClaimed ? 'gs.titleSelf' : 'gs.titleGift') | t }}</h2>
+        <p class="gutschein-success-line" [innerHTML]="'gs.line' | t : { amount: ok.amount, name: ok.toName }"></p>
+        <p class="gutschein-success-meta">{{ ok.toEmail }}</p>
+        @if (ok.selfClaimed) {
+          <p class="gutschein-success-hint">{{ 'gs.hintSelf' | t }}</p>
+        } @else {
+          <p class="gutschein-success-hint">{{ 'gs.hintGift' | t : { name: ok.toName } }}</p>
+        }
+        <button type="button" class="btn btn-primary" (click)="closeSuccess()">{{ 'common.close' | t }}</button>
+      </div>
+    </div>
+  }
+</div>

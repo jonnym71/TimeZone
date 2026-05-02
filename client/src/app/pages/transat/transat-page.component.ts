@@ -2,6 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OverlayService } from '../../services/overlay.service';
 import { Journey, JourneyLeg, TransatService } from '../../services/transat.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 interface ConnectionResult {
   ok: boolean;
@@ -15,12 +17,19 @@ interface ConnectionResult {
 @Component({
   selector: 'app-transat-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './transat-page.component.html',
 })
 export class TransatPageComponent {
   readonly overlay = inject(OverlayService);
   private transat = inject(TransatService);
+  private languageSvc = inject(LanguageService);
+
+  private tt(key: string, params?: Record<string, string | number>): string {
+    let s = this.languageSvc.t(key);
+    if (params) for (const [k, v] of Object.entries(params)) s = s.split('{' + k + '}').join(String(v));
+    return s;
+  }
 
   readonly fromValue = signal('');
   readonly toValue = signal('');
@@ -33,6 +42,7 @@ export class TransatPageComponent {
   readonly expandedLegs = signal<Set<number>>(new Set());
 
   readonly connection = computed<ConnectionResult | null>(() => {
+    this.languageSvc.lang(); // reactivity
     const fromRaw = this.fromValue().trim();
     const toRaw = this.toValue().trim();
     if (!fromRaw || !toRaw) return null;
@@ -47,16 +57,16 @@ export class TransatPageComponent {
     }
 
     if (unknown.length) {
-      const list = unknown.map(u => `„${u}"`).join(' und ');
+      const list = unknown.map(u => `„${u}"`).join(' ' + this.tt('transat.and') + ' ');
       return {
         ok: false,
-        errorMessage: `Hmm, ${list} kennen wir leider nicht.`,
-        errorHint: 'Bitte einen Ort aus den Vorschlägen wählen — wir kennen Städte, Bundesländer und Länder in Europa.',
+        errorMessage: this.tt('transat.errorUnknown', { list }),
+        errorHint: this.tt('transat.errorHint'),
       };
     }
 
     if (fromCanon!.toLowerCase() === toCanon!.toLowerCase()) {
-      return { ok: false, errorMessage: 'Start und Ziel müssen unterschiedlich sein.' };
+      return { ok: false, errorMessage: this.tt('transat.errorSame') };
     }
 
     const journey = this.transat.generateJourney(fromCanon!, toCanon!);
@@ -135,7 +145,9 @@ export class TransatPageComponent {
   }
 
   platformLabel(type: 'Bus' | 'Zug' | 'Flug'): string {
-    return this.transat.platformLabel(type);
+    if (type === 'Bus') return this.tt('transat.platform.bus');
+    if (type === 'Zug') return this.tt('transat.platform.zug');
+    return this.tt('transat.platform.flug');
   }
 
   legDurText(min: number): string {
@@ -148,14 +160,18 @@ export class TransatPageComponent {
     const h = Math.floor(j.totalMin / 60);
     const m = j.totalMin % 60;
     const numTransfers = j.legs.length - 1;
-    const transferText = numTransfers === 0 ? 'Direktverbindung' : (numTransfers === 1 ? '1 Umstieg' : numTransfers + ' Umstiege');
-    return `Gesamtreisezeit: ca. ${h}h ${m}min · ${transferText}`;
+    const transferText = numTransfers === 0
+      ? this.tt('transat.directConn')
+      : numTransfers === 1
+        ? this.tt('transat.oneTransfer')
+        : this.tt('transat.nTransfers', { n: numTransfers });
+    return `${this.tt('transat.totalLabel')} ${h}h ${m}min · ${transferText}`;
   }
 
   transferText(min: number): string {
     const h = Math.floor(min / 60);
     const m = min % 60;
-    return h ? `${h}h ${m} min` : `${min} Min.`;
+    return h ? `${h}h ${m} min` : `${min} ${this.tt('transat.minShort')}`;
   }
 
   highlightedSuggestion(loc: string, query: string): { before: string; match: string; after: string } | null {
@@ -170,7 +186,8 @@ export class TransatPageComponent {
   }
 
   legSummary(leg: JourneyLeg): string {
-    return this.transat.legSummary(leg);
+    const key = leg.type === 'Bus' ? 'transat.legBus' : leg.type === 'Zug' ? 'transat.legZug' : 'transat.legFlug';
+    return this.tt(key, { line: leg.line, depTime: leg.depTime, platform: String(leg.platform) });
   }
 
   operatorName(leg: JourneyLeg): string {

@@ -1,21 +1,114 @@
 <div class="history-page" [class.open]="overlay.historyOpen()" role="dialog" aria-label="HistoryFacts">
   <button class="tabellen-back" type="button" (click)="close()">
-    <span class="back-arrow" aria-hidden="true">←</span> Zurück
+    <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
   </button>
+
+  <app-admin-add-button
+    wrapperClass="history-page-add"
+    [items]="addItems"
+    (itemClick)="onAddItemClick($event)"></app-admin-add-button>
+  <input
+    #imageInput
+    type="file"
+    accept="image/*"
+    style="display:none"
+    (change)="onImageFileSelected($event)">
+
   <div class="history-page-content">
     <h1 class="history-page-title">HistoryFacts</h1>
-    <p class="history-page-intro">Geschichte zum Anfassen. Die Momente, die unsere Welt geformt haben — fundiert recherchiert und spannend erzählt.</p>
+    <p class="history-page-intro">{{ 'history.page.intro' | t }}</p>
 
     <div class="history-facts-list">
-      @for (item of items; track item.year) {
-        <article class="hf-item">
-          <div class="hf-year">{{ item.year }}</div>
+      @for (item of items(); track item.id) {
+        <article class="hf-item" [class.has-image]="!!item.image">
+          @if (item.image) {
+            <div class="hf-image-wrap">
+              <img class="hf-image" [src]="item.image" [alt]="displayTitle(item)">
+            </div>
+          }
+          <div class="hf-year">{{ item.date }}</div>
           <div class="hf-text">
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.text }}</p>
+            <h3>{{ displayTitle(item) }}</h3>
+            <p>{{ displayDescription(item) }}</p>
+            @if (auth.isAdmin()) {
+              <div class="hf-admin-actions">
+                <button
+                  type="button"
+                  class="hf-admin-btn hf-admin-image"
+                  [attr.title]="(item.image ? 'history.admin.imageChange' : 'history.admin.imageAdd') | t"
+                  (click)="triggerImagePicker(item.id, $event)">📷 {{ (item.image ? 'history.admin.imageChange' : 'history.admin.imageAdd') | t }}</button>
+                @if (item.image) {
+                  <button
+                    type="button"
+                    class="hf-admin-btn hf-admin-image-remove"
+                    [attr.title]="'common.delete' | t"
+                    (click)="removeImage(item.id, $event)">✕ {{ 'history.admin.imageRemove' | t }}</button>
+                }
+                <button
+                  type="button"
+                  class="hf-admin-btn hf-admin-edit"
+                  [attr.title]="'common.edit' | t"
+                  (click)="editEvent(item.id, $event)">✏️ {{ 'common.edit' | t }}</button>
+                <button
+                  type="button"
+                  class="hf-admin-btn hf-admin-delete"
+                  [attr.title]="'common.delete' | t"
+                  (click)="deleteEvent(item.id, $event)">🗑 {{ 'common.delete' | t }}</button>
+              </div>
+            }
           </div>
         </article>
       }
     </div>
   </div>
+
+  @if (showEventForm()) {
+    <div class="firma-add-overlay" role="dialog" aria-modal="true" aria-label="Ereignis" (click)="onFormBackdropClick($event)">
+      <form class="firma-add-form" autocomplete="off" (submit)="saveEvent($event)">
+        <button type="button" class="firma-add-close" aria-label="Schließen" (click)="closeEventForm()">✕</button>
+        <h3>{{ isEditMode() ? 'Ereignis bearbeiten' : 'Neues Ereignis hinzufügen' }}</h3>
+
+        <label class="firma-add-row">
+          <span>Datum <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            placeholder="z. B. 1969 oder 14.07.1789"
+            required
+            [ngModel]="formDate()"
+            (ngModelChange)="formDate.set($event)"
+            name="date">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Titel <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            placeholder="Titel des Ereignisses"
+            required
+            [ngModel]="formTitle()"
+            (ngModelChange)="formTitle.set($event)"
+            name="title">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Beschreibung <em>*</em></span>
+          <textarea
+            class="firma-add-input firma-add-textarea"
+            placeholder="Was ist passiert?"
+            rows="5"
+            required
+            [ngModel]="formDescription()"
+            (ngModelChange)="formDescription.set($event)"
+            name="description"></textarea>
+        </label>
+
+        <div class="firma-add-actions">
+          <button type="button" class="btn btn-outline" (click)="closeEventForm()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode() ? 'Speichern' : 'Hinzufügen' }}</button>
+        </div>
+      </form>
+    </div>
+  }
 </div>

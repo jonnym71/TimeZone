@@ -1,13 +1,14 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { OverlayService } from '../../services/overlay.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 const SAMUEL_TRIGGERS = ['sam', 'samu', 'samue', 'samuel'];
 
 @Component({
   selector: 'app-tabellen-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './tabellen-page.component.html',
 })
 export class TabellenPageComponent {

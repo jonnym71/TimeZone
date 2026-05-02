@@ -1,11 +1,12 @@
 import { Injectable, signal } from '@angular/core';
 
-export type OverlayMode = 'coming-soon' | 'not-yet' | 'therapie' | 'login';
+export type OverlayMode = 'coming-soon' | 'not-yet' | 'therapie' | 'login' | 'rank-required';
 
 export interface OverlayState {
   mode: OverlayMode;
   label: string;
   open: boolean;
+  requiredRank?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,9 +18,14 @@ export class OverlayService {
   readonly transatOpen = signal(false);
   readonly profileOpen = signal(false);
   readonly newsOpen = signal(false);
+  readonly gutscheineOpen = signal(false);
 
   open(label: string, mode: OverlayMode = 'coming-soon'): void {
     this.state.set({ mode, label, open: true });
+  }
+
+  openRankRequired(label: string, requiredRank: string): void {
+    this.state.set({ mode: 'rank-required', label, open: true, requiredRank });
   }
 
   close(): void {
@@ -34,6 +40,9 @@ export class OverlayService {
 
   openTransat(): void { this.transatOpen.set(true); }
   closeTransat(): void { this.transatOpen.set(false); }
+
+  openGutscheine(): void { this.gutscheineOpen.set(true); }
+  closeGutscheine(): void { this.gutscheineOpen.set(false); }
 
   toggleProfile(): void { this.profileOpen.update(v => !v); }
   closeProfile(): void { this.profileOpen.set(false); }

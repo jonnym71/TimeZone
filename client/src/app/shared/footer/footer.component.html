@@ -2,18 +2,18 @@
   <div class="footer-content">
     <div class="footer-col">
       <a routerLink="/" class="logo">TIME-ZONE</a>
-      <p>Animationsfilme, die bewegen. Welten, die verbinden.</p>
+      <p>{{ 'footer.tagline' | t }}</p>
     </div>
     <div class="footer-col">
-      <h4>Unternehmen</h4>
+      <h4>{{ 'footer.company' | t }}</h4>
       <ul>
-        <li><a routerLink="/" fragment="serie">Serie</a></li>
-        <li><a routerLink="/" fragment="tochterfirmen">Tochterfirmen</a></li>
-        <li><a routerLink="/" fragment="history">HistoryFacts</a></li>
+        <li><a routerLink="/" fragment="serie">{{ 'nav.serie' | t }}</a></li>
+        <li><a routerLink="/" fragment="tochterfirmen">{{ 'nav.tochterfirmen' | t }}</a></li>
+        <li><a routerLink="/" fragment="history">{{ 'nav.history' | t }}</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>Tochterfirmen</h4>
+      <h4>{{ 'footer.subsidiaries' | t }}</h4>
       <ul>
         <li><a href="#">TIME-ZONE-TRANSAT</a></li>
         <li><a href="#">TIME-ZONE Therapie</a></li>
@@ -21,16 +21,16 @@
       </ul>
     </div>
     <div class="footer-col">
-      <h4>Kontakt</h4>
+      <h4>{{ 'footer.contact' | t }}</h4>
       <ul>
         <li><a href="mailto:hello@timezone.com">hello&#64;timezone.com</a></li>
-        <li><a routerLink="/impressum">Impressum</a></li>
-        <li><a routerLink="/datenschutz">Datenschutz</a></li>
-        <li><a routerLink="/bildquellen">Bildquellen</a></li>
+        <li><a routerLink="/impressum">{{ 'footer.imprint' | t }}</a></li>
+        <li><a routerLink="/datenschutz">{{ 'footer.privacy' | t }}</a></li>
+        <li><a routerLink="/bildquellen">{{ 'footer.imageSources' | t }}</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    © 2026 TIME-ZONE. Alle Rechte vorbehalten.
+    {{ 'footer.copyright' | t }}
   </div>
 </footer>

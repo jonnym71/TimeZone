@@ -6,13 +6,15 @@ export interface UserState {
   avatar: string;
   rank: string;
   expenses: number;
+  credit: number;
   nameLastChanged: number | null;
 }
 
 const STORAGE_KEY = 'tz-user-state';
+const PENDING_GIFTS_KEY = 'tz-pending-gifts';
 export const NAME_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
-const ADMIN_EMAILS = ['lorenz.mauerhofer@outlook.com', 'jakisimfin@gmail.com'];
+const ADMIN_EMAILS = ['lorenz.mauerhofer@outlook.com', 'jakisimfin@gmail.com', 'jaksimfin@gmail.com'];
 
 const ADJECTIVES = ['saurer', 'wilder', 'schneller', 'frecher', 'sturer', 'leiser', 'roter', 'blauer', 'goldener', 'silberner', 'mutiger', 'flinker', 'listiger', 'stiller', 'heller'];
 const NOUNS = ['Spitz', 'Wolf', 'Bär', 'Falke', 'Tiger', 'Fuchs', 'Adler', 'Drache', 'Phönix', 'Geist', 'Rabe', 'Luchs', 'Hai', 'Kojote', 'Panther'];
@@ -20,7 +22,17 @@ const NOUNS = ['Spitz', 'Wolf', 'Bär', 'Falke', 'Tiger', 'Fuchs', 'Adler', 'Dra
 function loadState(): UserState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<UserState>;
+    return {
+      email: parsed.email ?? '',
+      username: parsed.username ?? '',
+      avatar: parsed.avatar ?? 'default',
+      rank: parsed.rank ?? 'Eisen',
+      expenses: parsed.expenses ?? 0,
+      credit: parsed.credit ?? 0,
+      nameLastChanged: parsed.nameLastChanged ?? null,
+    };
   } catch {
     return null;
   }
@@ -35,6 +47,23 @@ function persistState(state: UserState | null) {
   }
 }
 
+function loadPendingGifts(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(PENDING_GIFTS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistPendingGifts(map: Record<string, number>) {
+  try {
+    localStorage.setItem(PENDING_GIFTS_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
+
 function generateUsername(): string {
   return ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)] +
     NOUNS[Math.floor(Math.random() * NOUNS.length)];
@@ -43,7 +72,7 @@ function generateUsername(): string {
 function getAutoNameForEmail(email: string): string | null {
   const lower = email.toLowerCase();
   if (lower === 'lorenz.mauerhofer@outlook.com') return 'Lorenz';
-  if (lower === 'jakisimfin@gmail.com') return 'Jakob';
+  if (lower === 'jakisimfin@gmail.com' || lower === 'jaksimfin@gmail.com') return 'Jakob';
   return null;
 }
 
@@ -66,7 +95,7 @@ export class AuthService {
     return String(Math.floor(100000 + Math.random() * 900000));
   }
 
-  login(email: string): { isAdmin: boolean } {
+  login(email: string): { isAdmin: boolean; claimedCredit: number } {
     const existing = this.stateSignal();
     const autoName = getAutoNameForEmail(email);
     let state: UserState;
@@ -77,6 +106,7 @@ export class AuthService {
         avatar: 'default',
         rank: 'Eisen',
         expenses: 0,
+        credit: 0,
         nameLastChanged: null,
       };
     } else {
@@ -85,9 +115,44 @@ export class AuthService {
         state.username = autoName;
       }
     }
+
+    const claimedCredit = this.claimPendingGiftsFor(email);
+    state.credit = (state.credit ?? 0) + claimedCredit;
+
     persistState(state);
     this.stateSignal.set(state);
-    return { isAdmin: this.isAdminEmail(email) };
+    return { isAdmin: this.isAdminEmail(email), claimedCredit };
+  }
+
+  private claimPendingGiftsFor(email: string): number {
+    const map = loadPendingGifts();
+    const key = email.toLowerCase();
+    const amount = map[key] ?? 0;
+    if (amount > 0) {
+      delete map[key];
+      persistPendingGifts(map);
+    }
+    return amount;
+  }
+
+  sendGift(toEmail: string, amount: number): void {
+    const key = toEmail.trim().toLowerCase();
+    if (!key || amount <= 0) return;
+    const current = this.stateSignal();
+    if (current && current.email.toLowerCase() === key) {
+      this.updateState({ credit: (current.credit ?? 0) + amount });
+      return;
+    }
+    const map = loadPendingGifts();
+    map[key] = (map[key] ?? 0) + amount;
+    persistPendingGifts(map);
+  }
+
+  addExpense(amount: number): void {
+    if (amount <= 0) return;
+    const current = this.stateSignal();
+    if (!current) return;
+    this.updateState({ expenses: (current.expenses ?? 0) + amount });
   }
 
   logout(): void {

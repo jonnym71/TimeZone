@@ -1,28 +1,20 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { AdminAddButtonComponent } from '../../shared/admin-add-button/admin-add-button.component';
 import { OverlayService } from '../../services/overlay.service';
-
-interface Fact {
-  year: string;
-  title: string;
-  description: string;
-}
+import { HistoryService } from '../../services/history.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-history-preview',
   standalone: true,
-  imports: [AdminAddButtonComponent],
+  imports: [AdminAddButtonComponent, TranslatePipe],
   templateUrl: './history-preview.component.html',
 })
 export class HistoryPreviewComponent {
   private overlay = inject(OverlayService);
+  private history = inject(HistoryService);
 
-  readonly facts: Fact[] = [
-    { year: '1492', title: 'Eine neue Welt', description: 'Kolumbus erreicht Amerika und verändert die Welt für immer.' },
-    { year: '1789', title: 'Französische Revolution', description: 'Freiheit, Gleichheit, Brüderlichkeit – ein Aufschrei gegen die Monarchie.' },
-    { year: '1969', title: 'Mondlandung', description: 'Ein kleiner Schritt für einen Menschen, ein großer Sprung für die Menschheit.' },
-    { year: '1989', title: 'Mauerfall', description: 'Berlin wird wieder eins – Symbol für das Ende des Kalten Krieges.' },
-  ];
+  readonly facts = computed(() => this.history.events().slice(0, 4));
 
   readonly addItems = [
     { action: 'event', label: 'Geschichtliches Ereignis hinzufügen' },
@@ -30,5 +22,12 @@ export class HistoryPreviewComponent {
 
   factClick(): void {
     this.overlay.openHistory();
+  }
+
+  onAddItemClick(action: string): void {
+    if (action === 'event') {
+      this.history.requestAddForm();
+      this.overlay.openHistory();
+    }
   }
 }

@@ -1,9 +1,11 @@
 import { Component, ElementRef, OnDestroy, inject } from '@angular/core';
 import { OverlayService } from '../../services/overlay.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-news-panel',
   standalone: true,
+  imports: [TranslatePipe],
   templateUrl: './news-panel.component.html',
 })
 export class NewsPanelComponent implements OnDestroy {

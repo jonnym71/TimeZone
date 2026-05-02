@@ -1,24 +1,93 @@
 <section id="tochterfirmen" class="subsidiaries">
   <div class="subsidiaries-inner">
-    <app-admin-add-button wrapperClass="tochter-add" [items]="addItems"></app-admin-add-button>
+    <app-admin-add-button
+      wrapperClass="tochter-add"
+      [items]="addItems"
+      (itemClick)="onAddItemClick($event)"></app-admin-add-button>
     <app-news-panel></app-news-panel>
 
     <div class="section-header">
-      <div class="section-label">Unsere Welten</div>
-      <h2>Tochterfirmen</h2>
-      <p>Unter dem Dach von TIME-ZONE entstehen vielfältige Projekte – von Reisen über Therapie bis hin zu Geschichte.</p>
+      <div class="section-label">{{ 'tochter.label' | t }}</div>
+      <h2>{{ 'tochter.title' | t }}</h2>
+      <p>{{ 'tochter.intro' | t }}</p>
     </div>
 
     <div class="sub-grid">
-      @for (sub of subsidiaries; track sub.title) {
+      @for (sub of subsidiaries(); track sub.title) {
         <div class="sub-card">
           <div class="sub-icon">{{ sub.icon }}</div>
-          <div class="sub-subtitle">{{ sub.subtitle }}</div>
+          <div class="sub-subtitle">{{ subtitleOf(sub) }}</div>
           <h3>{{ sub.title }}</h3>
-          <p>{{ sub.description }}</p>
-          <a href="#" class="sub-link" (click)="cardClick(sub.action, $event)">{{ sub.linkText }}</a>
+          <p>{{ descriptionOf(sub) }}</p>
+          <a href="#" class="sub-link" (click)="cardClick(sub.action, $event)">{{ linkTextOf(sub) }}</a>
         </div>
       }
     </div>
+
+    @if (canShowMore()) {
+      <div class="sub-more">
+        <button type="button" class="btn btn-outline" (click)="moreClick()">{{ 'tochter.more' | t }}</button>
+      </div>
+    }
   </div>
+
+  @if (showAddForm()) {
+    <div class="firma-add-overlay" role="dialog" aria-modal="true" aria-label="Neue Firma hinzufügen" (click)="onBackdropClick($event)">
+      <form class="firma-add-form" autocomplete="off" (submit)="saveNewFirma($event)">
+        <button type="button" class="firma-add-close" aria-label="Schließen" (click)="closeAddForm()">✕</button>
+        <h3>Neue Firma hinzufügen</h3>
+
+        <label class="firma-add-row">
+          <span>Symbol</span>
+          <input
+            type="text"
+            class="firma-add-input firma-add-icon"
+            maxlength="2"
+            [ngModel]="newIcon()"
+            (ngModelChange)="newIcon.set($event)"
+            name="icon">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Untertitel</span>
+          <input
+            type="text"
+            class="firma-add-input"
+            placeholder="z. B. Reisebüro"
+            [ngModel]="newSubtitle()"
+            (ngModelChange)="newSubtitle.set($event)"
+            name="subtitle">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Titel <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            placeholder="Name der Firma"
+            required
+            [ngModel]="newTitle()"
+            (ngModelChange)="newTitle.set($event)"
+            name="title">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Beschreibung <em>*</em></span>
+          <textarea
+            class="firma-add-input firma-add-textarea"
+            placeholder="Kurze Beschreibung der Firma"
+            rows="4"
+            required
+            [ngModel]="newDescription()"
+            (ngModelChange)="newDescription.set($event)"
+            name="description"></textarea>
+        </label>
+
+        <div class="firma-add-actions">
+          <button type="button" class="btn btn-outline" (click)="closeAddForm()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Hinzufügen</button>
+        </div>
+      </form>
+    </div>
+  }
 </section>

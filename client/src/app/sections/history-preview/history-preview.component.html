@@ -1,15 +1,18 @@
 <section id="history">
-  <app-admin-add-button wrapperClass="history-add" [items]="addItems"></app-admin-add-button>
+  <app-admin-add-button
+    wrapperClass="history-add"
+    [items]="addItems"
+    (itemClick)="onAddItemClick($event)"></app-admin-add-button>
   <div class="section-header">
-    <div class="section-label">HistoryFacts</div>
-    <h2>Geschichte, die fasziniert</h2>
-    <p>Ein Auszug aus unseren beliebtesten historischen Fakten und Geschichten.</p>
+    <div class="section-label">{{ 'history.label' | t }}</div>
+    <h2>{{ 'history.title' | t }}</h2>
+    <p>{{ 'history.intro' | t }}</p>
   </div>
 
   <div class="facts-grid">
-    @for (fact of facts; track fact.year) {
+    @for (fact of facts(); track fact.id) {
       <div class="fact-card" (click)="factClick()">
-        <div class="fact-year">{{ fact.year }}</div>
+        <div class="fact-year">{{ fact.date }}</div>
         <h4>{{ fact.title }}</h4>
         <p>{{ fact.description }}</p>
       </div>

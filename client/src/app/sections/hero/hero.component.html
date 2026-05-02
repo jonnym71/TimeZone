@@ -12,11 +12,11 @@
         aria-label="Mars-Animation"
         (click)="onClockClick($event)"
         (keydown)="onClockKey($event)"><span class="tz-o-text">O</span><svg class="tz-clock-svg" viewBox="0 0 100 100" aria-hidden="true"><g class="tz-ticks"><line x1="50" y1="8" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="92"/><line x1="8" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="92" y2="50"/></g><line class="tz-hand tz-h" x1="50" y1="55" x2="50" y2="32"/><line class="tz-hand tz-m" x1="50" y1="58" x2="50" y2="22"/><line class="tz-hand tz-s" x1="50" y1="60" x2="50" y2="16"/><circle class="tz-dot" cx="50" cy="50" r="3"/></svg><svg class="tz-mars-svg" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="marsGrad" cx="0.4" cy="0.35"><stop offset="0%" stop-color="#ffaa80"/><stop offset="55%" stop-color="#cd5c2e"/><stop offset="100%" stop-color="#5a2310"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#marsGrad)"/><ellipse cx="32" cy="42" rx="11" ry="6" fill="#7a2e15" opacity="0.55"/><ellipse cx="65" cy="55" rx="9" ry="5" fill="#7a2e15" opacity="0.55"/><ellipse cx="48" cy="72" rx="9" ry="4" fill="#7a2e15" opacity="0.5"/><circle cx="22" cy="60" r="3" fill="#3a1808" opacity="0.7"/><circle cx="72" cy="35" r="2.5" fill="#3a1808" opacity="0.7"/><ellipse cx="50" cy="11" rx="11" ry="3.5" fill="#fff5e6" opacity="0.85"/><ellipse cx="50" cy="89" rx="9" ry="3" fill="#fff5e6" opacity="0.85"/></svg></span>NE</h1>
-    <p class="slogan">Lust zum Lachen</p>
+    <p class="slogan">{{ 'hero.slogan' | t }}</p>
 
     <div class="hero-cta">
-      <a routerLink="/" fragment="serie" class="btn btn-primary">Serie entdecken</a>
-      <a routerLink="/" fragment="tochterfirmen" class="btn btn-outline">Unsere Welten</a>
+      <a routerLink="/" fragment="serie" class="btn btn-primary">{{ 'hero.cta.serie' | t }}</a>
+      <a routerLink="/" fragment="tochterfirmen" class="btn btn-outline">{{ 'hero.cta.welten' | t }}</a>
     </div>
   </div>
 </header>

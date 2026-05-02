@@ -3,16 +3,17 @@ import { FormsModule } from '@angular/forms';
 import { AuthService, NAME_COOLDOWN_MS } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { RanksService } from '../../services/ranks.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 interface Figure {
   key: string;
-  name: string;
+  nameKey: string;
 }
 
 @Component({
   selector: 'app-profile-panel',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './profile-panel.component.html',
 })
 export class ProfilePanelComponent implements OnDestroy {
@@ -31,7 +32,7 @@ export class ProfilePanelComponent implements OnDestroy {
   readonly nameInput = signal('');
 
   readonly figures: Figure[] = [
-    { key: 'default', name: 'Standard' },
+    { key: 'default', nameKey: 'profile.figure.standard' },
   ];
 
   readonly cooldownText = signal('');
@@ -133,6 +134,10 @@ export class ProfilePanelComponent implements OnDestroy {
 
   cancelDelete(): void {
     this.deleteConfirming.set(false);
+  }
+
+  formatEur(value: number | undefined | null): string {
+    return ((value ?? 0)).toFixed(2).replace('.', ',') + '€';
   }
 
   private startCooldown(startedAt: number): void {

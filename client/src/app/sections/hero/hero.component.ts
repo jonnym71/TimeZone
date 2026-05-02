@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 const SHIP_SVG =
   '<svg viewBox="-15 0 110 60" aria-hidden="true">' +
@@ -22,7 +23,7 @@ const SHIP_SVG =
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './hero.component.html',
 })
 export class HeroComponent {

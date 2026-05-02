@@ -1,15 +1,15 @@
-<button class="news-btn" type="button" aria-label="News öffnen" (click)="toggle($event)">
+<button class="news-btn" type="button" [attr.aria-label]="'news.btnAria' | t" (click)="toggle($event)">
   <span class="newspaper-icon" aria-hidden="true">📰</span>
-  <span>News</span>
+  <span>{{ 'news.btn' | t }}</span>
 </button>
 
-<div class="news-panel" [class.open]="overlay.newsOpen()" role="dialog" aria-label="News">
-  <button class="news-close" type="button" aria-label="Schließen" (click)="close()">✕</button>
-  <div class="news-label">NEWS!</div>
-  <div class="news-headline">TIME-ZONE, eine neue Serie?</div>
+<div class="news-panel" [class.open]="overlay.newsOpen()" role="dialog" [attr.aria-label]="'news.btn' | t">
+  <button class="news-close" type="button" [attr.aria-label]="'common.close' | t" (click)="close()">✕</button>
+  <div class="news-label">{{ 'news.label' | t }}</div>
+  <div class="news-headline">{{ 'news.headline' | t }}</div>
   <div class="news-body">
-    <span class="news-fact">Anscheinend gibt es eine neue Serie!</span>
-    <a class="news-link" href="#">Zum Artikel <span aria-hidden="true">→</span></a>
+    <span class="news-fact">{{ 'news.fact' | t }}</span>
+    <a class="news-link" href="#">{{ 'news.linkText' | t }} <span aria-hidden="true">→</span></a>
   </div>
   <div class="news-date">27.04.2026</div>
 </div>

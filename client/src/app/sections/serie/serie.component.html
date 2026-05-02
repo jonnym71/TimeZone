@@ -1,7 +1,16 @@
 <section id="serie">
-  <app-admin-add-button wrapperClass="serie-add" [items]="addItems"></app-admin-add-button>
+  <app-admin-add-button
+    wrapperClass="serie-add"
+    [items]="addItems"
+    (itemClick)="onAddItemClick($event)"></app-admin-add-button>
+  <input
+    #imageInput
+    type="file"
+    accept="image/*"
+    style="display:none"
+    (change)="onImageFileSelected($event)">
   <div class="section-header">
-    <div class="section-label">Unsere Hauptserie</div>
+    <div class="section-label">{{ 'serie.label' | t }}</div>
     <div class="serie-title">
       <h2>Die TIME-Z<span class="tz-o"><span class="tz-o-text">O</span><svg viewBox="0 0 100 100" aria-hidden="true"><g class="tz-ticks"><line x1="50" y1="8" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="92"/><line x1="8" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="92" y2="50"/></g><line class="tz-hand tz-h" x1="50" y1="55" x2="50" y2="32"/><line class="tz-hand tz-m" x1="50" y1="58" x2="50" y2="22"/><line class="tz-hand tz-s" x1="50" y1="60" x2="50" y2="16"/><circle class="tz-dot" cx="50" cy="50" r="3"/></svg></span>NE Serie</h2>
       <details #staffelDetails class="staffel-dropdown">
@@ -13,25 +22,119 @@
         </ul>
       </details>
     </div>
-    <p>Eine animierte Reise durch verschiedene Universen, Charaktere und Welten – aufwendig produziert, liebevoll erzählt.</p>
+    <p>{{ 'serie.intro' | t }}</p>
   </div>
-  <div class="series-grid">
-    @for (ep of episodes; track ep.num; let i = $index) {
-      <div
-        class="episode-card"
-        [class.locked]="locked()"
-        [class.shake]="shaking() === i"
-        (click)="episodeClick(i)">
-        <div class="episode-thumb">
-          <div class="play-icon"></div>
-          <div class="episode-lock" aria-hidden="true">🔒</div>
+
+  <div class="series-pager">
+    <button
+      type="button"
+      class="series-pager-btn series-pager-prev"
+      [disabled]="!canPrev()"
+      aria-label="Vorherige Folgen"
+      (click)="prevPage()">‹</button>
+
+    <div class="series-grid">
+      @for (ep of visibleEpisodes(); track ep.num; let i = $index) {
+        <div
+          class="episode-card"
+          [class.locked]="locked()"
+          [class.shake]="shaking() === globalIndex(i)"
+          (click)="episodeClick(globalIndex(i))">
+          <div class="episode-thumb" [class.has-image]="!!ep.image">
+            @if (ep.image) {
+              <img class="episode-thumb-img" [src]="ep.image" alt="">
+            }
+            <div class="play-icon"></div>
+            <div class="episode-lock" aria-hidden="true">🔒</div>
+            @if (auth.isAdmin()) {
+              <div class="episode-thumb-actions">
+                <button
+                  type="button"
+                  class="episode-thumb-add"
+                  [attr.aria-label]="ep.image ? 'Bild ändern' : 'Bild hinzufügen'"
+                  [attr.title]="ep.image ? 'Bild ändern' : 'Bild hinzufügen'"
+                  (click)="triggerImagePicker(globalIndex(i), $event)">📷</button>
+                @if (ep.image) {
+                  <button
+                    type="button"
+                    class="episode-thumb-remove"
+                    aria-label="Bild löschen"
+                    title="Bild löschen"
+                    (click)="removeImage(globalIndex(i), $event)">✕</button>
+                }
+              </div>
+            }
+          </div>
+          <div class="episode-info">
+            <div class="episode-num">{{ ep.num }}</div>
+            <h3>{{ episodeTitle(ep) }}</h3>
+            <p>{{ episodeDescription(ep) }}</p>
+            @if (auth.isAdmin()) {
+              <div class="episode-admin-actions">
+                <button
+                  type="button"
+                  class="episode-admin-btn episode-admin-edit"
+                  aria-label="Folge bearbeiten"
+                  title="Bearbeiten"
+                  (click)="editEpisode(globalIndex(i), $event)">✏️ Bearbeiten</button>
+                <button
+                  type="button"
+                  class="episode-admin-btn episode-admin-delete"
+                  aria-label="Folge löschen"
+                  title="Löschen"
+                  (click)="deleteEpisode(globalIndex(i), $event)">🗑 Löschen</button>
+              </div>
+            }
+          </div>
         </div>
-        <div class="episode-info">
-          <div class="episode-num">{{ ep.num }}</div>
-          <h3>{{ ep.title }}</h3>
-          <p>{{ ep.description }}</p>
-        </div>
-      </div>
-    }
+      }
+    </div>
+
+    <button
+      type="button"
+      class="series-pager-btn series-pager-next"
+      [disabled]="!canNext()"
+      aria-label="Nächste Folgen"
+      (click)="nextPage()">›</button>
   </div>
+
+  <div class="series-pager-info">{{ rangeLabel() }} von {{ episodes().length }}</div>
+
+  @if (showEpisodeForm()) {
+    <div class="firma-add-overlay" role="dialog" aria-modal="true" [attr.aria-label]="isEditMode() ? 'Folge bearbeiten' : 'Neue Folge hinzufügen'" (click)="onEpisodeFormBackdropClick($event)">
+      <form class="firma-add-form" autocomplete="off" (submit)="saveNewEpisode($event)">
+        <button type="button" class="firma-add-close" aria-label="Schließen" (click)="closeEpisodeForm()">✕</button>
+        <h3>{{ isEditMode() ? 'Folge bearbeiten' : 'Neue Folge hinzufügen' }}</h3>
+
+        <label class="firma-add-row">
+          <span>Titel <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            placeholder="Titel der Folge"
+            required
+            [ngModel]="newEpisodeTitle()"
+            (ngModelChange)="newEpisodeTitle.set($event)"
+            name="title">
+        </label>
+
+        <label class="firma-add-row">
+          <span>Beschreibung <em>*</em></span>
+          <textarea
+            class="firma-add-input firma-add-textarea"
+            placeholder="Worum geht es in dieser Folge?"
+            rows="4"
+            required
+            [ngModel]="newEpisodeDescription()"
+            (ngModelChange)="newEpisodeDescription.set($event)"
+            name="description"></textarea>
+        </label>
+
+        <div class="firma-add-actions">
+          <button type="button" class="btn btn-outline" (click)="closeEpisodeForm()">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode() ? 'Speichern' : 'Hinzufügen' }}</button>
+        </div>
+      </form>
+    </div>
+  }
 </section>
