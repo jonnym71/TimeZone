@@ -7,7 +7,7 @@ import { LanguageService } from '../../services/language.service';
 import { AudioService } from '../../services/audio.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
-type SubsidiaryAction = 'transat' | 'therapie' | 'history' | 'music' | 'more';
+type SubsidiaryAction = 'transat' | 'history' | 'music' | 'more';
 
 interface Subsidiary {
   icon: string;
@@ -54,17 +54,6 @@ export class TochterfirmenComponent {
       subtitleKey: 'sub.transat.subtitle',
       descriptionKey: 'sub.transat.description',
       linkTextKey: 'sub.transat.link',
-    },
-    {
-      icon: '♥',
-      subtitle: '',
-      title: 'TIME-ZONE Therapie',
-      description: '',
-      linkText: '',
-      action: 'therapie',
-      subtitleKey: 'sub.therapie.subtitle',
-      descriptionKey: 'sub.therapie.description',
-      linkTextKey: 'sub.therapie.link',
     },
     {
       icon: '⌛',
@@ -122,7 +111,6 @@ export class TochterfirmenComponent {
   cardClick(action: SubsidiaryAction, event: MouseEvent): void {
     event.preventDefault();
     if (action === 'transat') this.overlay.openTransat();
-    else if (action === 'therapie') this.overlay.open('TIME-ZONE Therapie', 'therapie');
     else if (action === 'history') this.overlay.openHistory();
     else if (action === 'music') this.audio.playRadetzkymarsch();
     else this.overlay.open('Mehr Informationen', 'coming-soon');

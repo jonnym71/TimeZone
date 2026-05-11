@@ -12,7 +12,7 @@ export class RanksService {
   readonly ranks: Rank[] = [
     {
       key: 'Eisen', color: '#7a8088', price: '0,00€',
-      perks: ['Staffel 1', 'TIME-ZONE Tabellen', 'TIME-ZONE Therapie'],
+      perks: ['Staffel 1', 'TIME-ZONE Tabellen'],
     },
     {
       key: 'Bronze', color: '#cd7f32', price: '0,49€ / Monat',

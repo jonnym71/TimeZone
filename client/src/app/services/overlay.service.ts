@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type OverlayMode = 'coming-soon' | 'not-yet' | 'therapie' | 'login' | 'rank-required';
+export type OverlayMode = 'coming-soon' | 'not-yet' | 'login' | 'rank-required';
 
 export interface OverlayState {
   mode: OverlayMode;
