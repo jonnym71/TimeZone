@@ -5,9 +5,12 @@ import { NewsPanelComponent } from '../../shared/news-panel/news-panel.component
 import { OverlayService } from '../../services/overlay.service';
 import { LanguageService } from '../../services/language.service';
 import { AudioService } from '../../services/audio.service';
+import { AuthService } from '../../services/auth.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 type SubsidiaryAction = 'transat' | 'history' | 'music' | 'more';
+
+const RANK_ORDER = ['Eisen', 'Bronze', 'Silber', 'Gold', 'Platin', 'Diamant'];
 
 interface Subsidiary {
   icon: string;
@@ -16,6 +19,10 @@ interface Subsidiary {
   description: string;
   linkText: string;
   action: SubsidiaryAction;
+  /** Minimum rank required to use this subsidiary. Omit = always available. */
+  requiredRank?: string;
+  /** Only admins can use this subsidiary. */
+  adminOnly?: boolean;
   /** When set, the corresponding text is looked up via translation key */
   subtitleKey?: string;
   descriptionKey?: string;
@@ -32,6 +39,7 @@ export class TochterfirmenComponent {
   private overlay = inject(OverlayService);
   private languageSvc = inject(LanguageService);
   private audio = inject(AudioService);
+  private auth = inject(AuthService);
 
   subtitleOf(s: Subsidiary): string {
     return s.subtitleKey ? this.languageSvc.t(s.subtitleKey) : s.subtitle;
@@ -43,6 +51,13 @@ export class TochterfirmenComponent {
     return s.linkTextKey ? this.languageSvc.t(s.linkTextKey) : s.linkText;
   }
 
+  hasAccess(s: Subsidiary): boolean {
+    if (s.adminOnly && !this.auth.isAdmin()) return false;
+    if (!s.requiredRank) return true;
+    const userRank = this.auth.user()?.rank ?? 'Eisen';
+    return RANK_ORDER.indexOf(userRank) >= RANK_ORDER.indexOf(s.requiredRank);
+  }
+
   readonly subsidiaries = signal<Subsidiary[]>([
     {
       icon: '✈',
@@ -51,6 +66,7 @@ export class TochterfirmenComponent {
       description: '',
       linkText: '',
       action: 'transat',
+      adminOnly: true,
       subtitleKey: 'sub.transat.subtitle',
       descriptionKey: 'sub.transat.description',
       linkTextKey: 'sub.transat.link',
@@ -62,6 +78,7 @@ export class TochterfirmenComponent {
       description: '',
       linkText: '',
       action: 'history',
+      requiredRank: 'Bronze',
       subtitleKey: 'sub.history.subtitle',
       descriptionKey: 'sub.history.description',
       linkTextKey: 'sub.history.link',
@@ -76,6 +93,7 @@ export class TochterfirmenComponent {
       description: 'Interaktive Spielwelten, in denen Zeit zur Spielfigur wird. Eintauchen, knobeln, gewinnen – mit Stil.',
       linkText: 'Spiele entdecken →',
       action: 'more',
+      requiredRank: 'Gold',
     },
     {
       icon: '🎵',
@@ -84,6 +102,7 @@ export class TochterfirmenComponent {
       description: 'Atmosphärische Klangwelten und Soundtracks aus dem TIME-ZONE-Universum – komponiert mit Liebe zum Detail.',
       linkText: 'Reinhören →',
       action: 'music',
+      requiredRank: 'Gold',
     },
     {
       icon: '📚',
@@ -92,6 +111,7 @@ export class TochterfirmenComponent {
       description: 'Wissen verständlich vermittelt: Kurse, Workshops und Lerninhalte rund um Zeit, Geschichte und Innovation.',
       linkText: 'Lernen starten →',
       action: 'more',
+      requiredRank: 'Gold',
     },
   ];
 
@@ -108,8 +128,17 @@ export class TochterfirmenComponent {
     { action: 'firma', label: 'Firma hinzufügen' },
   ];
 
-  cardClick(action: SubsidiaryAction, event: MouseEvent): void {
+  cardClick(sub: Subsidiary, event: MouseEvent): void {
     event.preventDefault();
+    if (!this.hasAccess(sub)) {
+      if (sub.adminOnly) {
+        this.overlay.open(sub.title, 'admin-only');
+      } else {
+        this.overlay.openRankRequired(sub.title, sub.requiredRank!);
+      }
+      return;
+    }
+    const action = sub.action;
     if (action === 'transat') this.overlay.openTransat();
     else if (action === 'history') this.overlay.openHistory();
     else if (action === 'music') this.audio.playRadetzkymarsch();

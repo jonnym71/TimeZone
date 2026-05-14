@@ -1,0 +1,24 @@
+<div class="credit-toast" [class.show]="visible()" role="alertdialog" aria-live="assertive" aria-modal="true">
+  <div class="credit-toast-card">
+    <span class="credit-toast-icon" aria-hidden="true">🎁</span>
+    <div class="credit-toast-text">
+      <strong class="credit-toast-title">{{ count() === 1 ? ('credit.toast.title' | t) : ('credit.toast.titleMulti' | t : { n: count() }) }}</strong>
+      <ul class="credit-toast-list">
+        @for (g of gifts(); track $index) {
+          <li>
+            @if (g.fromName) {
+              {{ 'credit.toast.fromKnown' | t : { amount: formatEur(g.amount), name: g.fromName } }}
+            } @else {
+              {{ 'credit.toast.fromAnonymous' | t : { amount: formatEur(g.amount) } }}
+            }
+          </li>
+        }
+      </ul>
+      <span class="credit-toast-hint">{{ 'credit.toast.spendHint' | t }}</span>
+    </div>
+    <div class="credit-toast-actions">
+      <button class="credit-toast-btn primary" type="button" (click)="openShop()">{{ 'credit.toast.openShop' | t }}</button>
+      <button class="credit-toast-btn" type="button" (click)="dismiss()">{{ 'credit.toast.dismiss' | t }}</button>
+    </div>
+  </div>
+</div>

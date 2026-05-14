@@ -1,0 +1,195 @@
+<div class="inbox-page" [class.open]="overlay.inboxOpen()" role="dialog" aria-label="INBOX">
+  <header class="inbox-topbar">
+    <button class="spark-back" type="button" (click)="close()">
+      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+    </button>
+    <div class="spark-brand inbox-brand">
+      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="3" y="6" width="26" height="20" rx="3" fill="none" stroke="#FFB45A" stroke-width="2"/>
+        <path d="M3 8l13 9 13-9" fill="none" stroke="#FFB45A" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <span>INBOX</span>
+    </div>
+    <div class="spark-actions">
+      <span class="document-save-hint" [class.visible]="!!savedHint()">{{ savedHint() === '→' ? ('inbox.sentMsg' | t) : ('inbox.savedDraft' | t) }}</span>
+      <button type="button" class="inbox-compose-btn" (click)="newCompose()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        {{ 'inbox.newMessage' | t }}
+      </button>
+    </div>
+  </header>
+
+  <div class="inbox-main">
+    <!-- Sidebar: folders + contacts -->
+    <aside class="inbox-sidebar">
+      <nav class="inbox-folders">
+        <button type="button" [class.active]="currentFolder() === 'compose'" (click)="setFolder('compose')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>
+          <span>{{ 'inbox.folder.compose' | t }}</span>
+        </button>
+        <button type="button" [class.active]="currentFolder() === 'drafts'" (click)="setFolder('drafts')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8z"/><path d="M14 3v5h5"/></svg>
+          <span>{{ 'inbox.folder.drafts' | t }}</span>
+          @if (drafts().length > 0) { <span class="inbox-folder-count">{{ drafts().length }}</span> }
+        </button>
+        <button type="button" [class.active]="currentFolder() === 'sent'" (click)="setFolder('sent')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-7 18-3-7z"/></svg>
+          <span>{{ 'inbox.folder.sent' | t }}</span>
+          @if (sent().length > 0) { <span class="inbox-folder-count">{{ sent().length }}</span> }
+        </button>
+      </nav>
+
+      <div class="inbox-contacts">
+        <header><h3>{{ 'inbox.contacts' | t }}</h3><span class="compute-count">{{ contacts().length }}</span></header>
+        <div class="inbox-contact-add">
+          <input type="text" [ngModel]="contactName()" (ngModelChange)="contactName.set($event)" [attr.placeholder]="'inbox.contact.name' | t">
+          <input type="email" [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)" [attr.placeholder]="'inbox.contact.email' | t" (keydown.enter)="addContact()">
+          <button type="button" (click)="addContact()" [disabled]="!contactEmail().trim()">+</button>
+        </div>
+        @if (contacts().length === 0) {
+          <p class="compute-empty">{{ 'inbox.contacts.empty' | t }}</p>
+        } @else {
+          <ul class="inbox-contact-list">
+            @for (c of contacts(); track c.id) {
+              <li class="inbox-contact-item">
+                <button type="button" class="inbox-contact-pick" (click)="pickContact(c)">
+                  <strong>{{ c.name || c.email }}</strong>
+                  @if (c.name) { <span class="inbox-contact-email">{{ c.email }}</span> }
+                </button>
+                <button type="button" class="inbox-contact-del" (click)="deleteContact(c.id)" [attr.aria-label]="'inbox.contact.delete' | t">×</button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </aside>
+
+    <!-- Main area: compose / list -->
+    <section class="inbox-content">
+      @if (currentFolder() === 'compose') {
+        <form class="inbox-compose" (submit)="$event.preventDefault(); send()" autocomplete="off">
+          <h2 class="inbox-compose-title">{{ 'inbox.compose.title' | t }}</h2>
+
+          <div class="inbox-field">
+            <label>{{ 'inbox.field.toName' | t }}</label>
+            <input type="text" [ngModel]="recipientName()" (ngModelChange)="recipientName.set($event)" name="toName" [attr.placeholder]="'inbox.field.toName.ph' | t">
+          </div>
+          <div class="inbox-field">
+            <label>{{ 'inbox.field.toEmail' | t }} *</label>
+            <input type="email" [ngModel]="recipientEmail()" (ngModelChange)="recipientEmail.set($event)" name="toEmail" [class.invalid]="recipientEmail() && !emailValid()" [attr.placeholder]="'inbox.field.toEmail.ph' | t" required>
+            @if (recipientEmail() && !emailValid()) {
+              <span class="inbox-field-error">{{ 'inbox.field.toEmail.err' | t }}</span>
+            }
+          </div>
+          <div class="inbox-field-row">
+            <div class="inbox-field">
+              <label>CC</label>
+              <input type="text" [ngModel]="cc()" (ngModelChange)="cc.set($event)" name="cc" placeholder="email1, email2">
+            </div>
+            <div class="inbox-field">
+              <label>BCC</label>
+              <input type="text" [ngModel]="bcc()" (ngModelChange)="bcc.set($event)" name="bcc" placeholder="email1, email2">
+            </div>
+          </div>
+          <div class="inbox-field">
+            <label>{{ 'inbox.field.subject' | t }} *</label>
+            <input type="text" [ngModel]="subject()" (ngModelChange)="subject.set($event)" name="subject" [attr.placeholder]="'inbox.field.subject.ph' | t">
+          </div>
+          <div class="inbox-field inbox-field-grow">
+            <label>{{ 'inbox.field.body' | t }} *</label>
+            <textarea [ngModel]="body()" (ngModelChange)="body.set($event)" name="body" [attr.placeholder]="'inbox.field.body.ph' | t"></textarea>
+          </div>
+
+          <div class="inbox-attachments">
+            <div class="inbox-attachments-head">
+              <label class="inbox-attach-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.5l-9 9a5.5 5.5 0 0 1-7.8-7.8l9-9a3.5 3.5 0 0 1 5 5l-9 9a1.5 1.5 0 0 1-2.1-2.1l8-8"/>
+                </svg>
+                <span>{{ 'inbox.attach' | t }}</span>
+                <input type="file" multiple (change)="onFilesSelected($any($event.target))" hidden>
+              </label>
+              @if (attachments().length > 0) {
+                <span class="inbox-attach-count">{{ attachments().length }} · {{ formatBytes(totalAttachmentSize()) }}</span>
+              }
+            </div>
+            @if (attachments().length > 0) {
+              <ul class="inbox-attach-list">
+                @for (a of attachments(); track a.id) {
+                  <li class="inbox-attach-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8z"/><path d="M14 3v5h5"/></svg>
+                    <span class="inbox-attach-name" [attr.title]="a.name">{{ a.name }}</span>
+                    <span class="inbox-attach-size">{{ formatBytes(a.size) }}</span>
+                    <button type="button" class="inbox-attach-action" (click)="downloadAttachment(a)" [attr.title]="'inbox.attach.download' | t" aria-label="Download">↓</button>
+                    <button type="button" class="inbox-attach-action inbox-attach-del" (click)="removeAttachment(a.id)" [attr.aria-label]="'inbox.attach.remove' | t">×</button>
+                  </li>
+                }
+              </ul>
+              <p class="inbox-attach-note">{{ 'inbox.attach.note' | t }}</p>
+            }
+          </div>
+
+          <div class="inbox-compose-actions">
+            <button type="submit" class="inbox-send-btn" [disabled]="!canSend()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-7 18-3-7z"/></svg>
+              {{ 'inbox.send' | t }}
+            </button>
+            <span class="inbox-send-hint">{{ 'inbox.sendHint' | t }}</span>
+          </div>
+        </form>
+      } @else if (currentFolder() === 'drafts') {
+        <div class="inbox-list-view">
+          <h2 class="inbox-list-title">{{ 'inbox.folder.drafts' | t }}</h2>
+          @if (drafts().length === 0) {
+            <p class="compute-empty">{{ 'inbox.drafts.empty' | t }}</p>
+          } @else {
+            <ul class="inbox-mail-list">
+              @for (d of drafts(); track d.id) {
+                <li class="inbox-mail-item" (click)="loadDraft(d)">
+                  <div class="inbox-mail-row">
+                    <strong class="inbox-mail-to">{{ d.recipientName || d.recipientEmail || ('inbox.noRecipient' | t) }}</strong>
+                    <span class="inbox-mail-date">{{ formatDate(d.updatedAt) }}</span>
+                  </div>
+                  <div class="inbox-mail-row">
+                    <span class="inbox-mail-subject">{{ d.subject || ('inbox.noSubject' | t) }}</span>
+                  </div>
+                  <div class="inbox-mail-row inbox-mail-preview">
+                    <span>{{ d.body.slice(0, 120) }}</span>
+                  </div>
+                  <button type="button" class="inbox-mail-del" (click)="$event.stopPropagation(); deleteDraft(d.id)" [attr.aria-label]="'inbox.delete' | t">×</button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      } @else {
+        <div class="inbox-list-view">
+          <h2 class="inbox-list-title">{{ 'inbox.folder.sent' | t }}</h2>
+          @if (sent().length === 0) {
+            <p class="compute-empty">{{ 'inbox.sent.empty' | t }}</p>
+          } @else {
+            <ul class="inbox-mail-list">
+              @for (m of sent(); track m.id) {
+                <li class="inbox-mail-item inbox-mail-sent">
+                  <div class="inbox-mail-row">
+                    <strong class="inbox-mail-to">{{ m.recipientName || m.recipientEmail }}</strong>
+                    <span class="inbox-mail-date">{{ formatDate(m.sentAt ?? m.updatedAt) }}</span>
+                  </div>
+                  <div class="inbox-mail-row">
+                    <span class="inbox-mail-email">{{ m.recipientEmail }}</span>
+                  </div>
+                  <div class="inbox-mail-row">
+                    <span class="inbox-mail-subject">{{ m.subject }}</span>
+                  </div>
+                  <div class="inbox-mail-row inbox-mail-preview">
+                    <span>{{ m.body.slice(0, 120) }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

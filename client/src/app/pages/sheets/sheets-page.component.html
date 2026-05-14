@@ -1,0 +1,155 @@
+<div class="sheets-page" [class.open]="overlay.sheetsOpen()" role="dialog" aria-label="SHEETS">
+  <!-- Topbar -->
+  <header class="sheets-topbar">
+    <button class="spark-back" type="button" (click)="close()">
+      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+    </button>
+    <div class="spark-brand sheets-brand">
+      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="3" y="5" width="26" height="22" rx="2" fill="none" stroke="#E83A0B" stroke-width="2"/>
+        <path d="M3 11h26M3 17h26M3 23h26M11 5v22M19 5v22" stroke="#E83A0B" stroke-width="1.5"/>
+      </svg>
+      <span>SHEETS</span>
+    </div>
+    <div class="spark-actions">
+      <label class="spark-icon-btn" [attr.title]="'sheets.import' | t" aria-label="Import CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17V3"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
+        <input type="file" accept=".csv,text/csv" (change)="importCsv($any($event.target))" hidden>
+      </label>
+      <button type="button" class="spark-icon-btn" (click)="exportCsv()" [attr.title]="'sheets.export' | t" aria-label="Export CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14"/><path d="M6 9l6-6 6 6"/><path d="M4 21h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="sheets-toolbar">
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().bold" (click)="toggleBold()" title="Fett (Strg+B)"><strong>B</strong></button>
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().italic" (click)="toggleItalic()" title="Kursiv (Strg+I)"><em>I</em></button>
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().underline" (click)="toggleUnderline()" title="Unterstrichen (Strg+U)"><u>U</u></button>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().align === 'left'" (click)="setAlign('left')" [attr.title]="'spark.alignLeft' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></svg></button>
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().align === 'center'" (click)="setAlign('center')" [attr.title]="'spark.alignCenter' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M5 18h14"/></svg></button>
+    <button type="button" class="spark-icon-btn" [class.active]="currentStyle().align === 'right'" (click)="setAlign('right')" [attr.title]="'spark.alignRight' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M7 18h13"/></svg></button>
+
+    <div class="spark-tool-divider"></div>
+
+    <label class="spark-color-wrap" [attr.title]="'spark.textColor' | t">
+      <span class="spark-color-letter" [style.color]="currentStyle().color">A</span>
+      <input type="color" class="spark-color-input" [value]="currentStyle().color ?? '#1a1410'" (input)="setColor($any($event.target).value)" aria-label="Text color">
+    </label>
+    <label class="spark-color-wrap" [attr.title]="'sheets.bgColor' | t">
+      <span class="spark-color-letter" style="background:rgba(232,58,11,0.18);border-radius:3px;padding:0 3px;">H</span>
+      <input type="color" class="spark-color-input" [value]="currentStyle().bg ?? '#ffffff'" (input)="setBg($any($event.target).value)" aria-label="Highlight">
+    </label>
+
+    <div class="spark-tool-divider"></div>
+
+    <select class="spark-select" [value]="currentStyle().format ?? ''" (change)="setFormat($any($event.target).value || undefined)" [attr.title]="'sheets.format' | t">
+      <option value="">{{ 'sheets.fmt.auto' | t }}</option>
+      <option value="number">{{ 'sheets.fmt.number' | t }}</option>
+      <option value="currency">{{ 'sheets.fmt.currency' | t }}</option>
+      <option value="percent">{{ 'sheets.fmt.percent' | t }}</option>
+      <option value="text">{{ 'sheets.fmt.text' | t }}</option>
+    </select>
+    <button type="button" class="spark-icon-btn" (click)="setDecimals((currentStyle().decimals ?? 0) + 1)" [attr.title]="'sheets.moreDecimals' | t">.0</button>
+    <button type="button" class="spark-icon-btn" (click)="setDecimals(Math.max(0, (currentStyle().decimals ?? 0) - 1))" [attr.title]="'sheets.lessDecimals' | t">.00</button>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" (click)="clearFormat()" [attr.title]="'doc.removeFormat' | t">⌫f</button>
+    <button type="button" class="spark-icon-btn" (click)="clearContents()" [attr.title]="'sheets.clearContents' | t">⌫</button>
+  </div>
+
+  <!-- Formula bar -->
+  <div class="sheets-formula-bar">
+    <span class="sheets-cell-label">{{ selected() }}</span>
+    <span class="sheets-fx">ƒx</span>
+    <input
+      #formulaInput
+      type="text"
+      class="sheets-formula-input"
+      [value]="editing() === selected() ? editValue() : currentRaw()"
+      (input)="editing.set(selected()); editValue.set($any($event.target).value)"
+      (focus)="editing.set(selected()); editValue.set(currentRaw())"
+      (keydown.enter)="commitEdit(); formulaInput.blur()"
+      (keydown.escape)="cancelEdit(); formulaInput.blur()"
+      (blur)="editing() === selected() ? commitEdit() : null"
+      [attr.placeholder]="'sheets.formulaPh' | t">
+  </div>
+
+  <!-- Grid -->
+  <div class="sheets-grid-wrap">
+    <table class="sheets-grid">
+      <thead>
+        <tr>
+          <th class="sheets-corner"></th>
+          @for (c of cols(); track c; let i = $index) {
+            <th class="sheets-col-head" [class.active]="selectionAnchor() && keyToAddr(selectionAnchor()!)?.col === i">{{ c }}</th>
+          }
+          <th><button type="button" class="sheets-add-btn" (click)="addCol()" [attr.title]="'sheets.addCol' | t">+</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rows(); track r; let ri = $index) {
+          <tr>
+            <th class="sheets-row-head" [class.active]="selectionAnchor() && keyToAddr(selectionAnchor()!)?.row === ri">{{ r }}</th>
+            @for (c of cols(); track c; let ci = $index) {
+              <td
+                class="sheets-cell"
+                [class.selected]="selected() === addrToKey(ci, ri)"
+                [class.in-range]="selectedRangeSet().has(addrToKey(ci, ri))"
+                [class.editing]="editing() === addrToKey(ci, ri)"
+                [ngStyle]="cellStyleObj(addrToKey(ci, ri))"
+                (mousedown)="selectCell(addrToKey(ci, ri), $event.shiftKey)"
+                (dblclick)="startEdit(addrToKey(ci, ri))">
+                @if (editing() === addrToKey(ci, ri)) {
+                  <input
+                    class="sheets-cell-input"
+                    type="text"
+                    [value]="editValue()"
+                    (input)="editValue.set($any($event.target).value)"
+                    (blur)="commitEdit()"
+                    autofocus>
+                } @else {
+                  {{ displayValue(addrToKey(ci, ri)) }}
+                }
+              </td>
+            }
+            <td></td>
+          </tr>
+        }
+        <tr>
+          <th><button type="button" class="sheets-add-btn" (click)="addRow()" [attr.title]="'sheets.addRow' | t">+</button></th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Sheet tabs -->
+  <div class="sheets-tabs">
+    @for (s of workbook().sheets; track s.id) {
+      <div class="sheets-tab" [class.active]="s.id === workbook().activeSheetId">
+        <button type="button" class="sheets-tab-btn" (click)="switchSheet(s.id)" (dblclick)="renameSheet(s)">{{ s.name }}</button>
+        @if (workbook().sheets.length > 1) {
+          <button type="button" class="sheets-tab-del" (click)="deleteSheet(s)" [attr.aria-label]="'sheets.deleteSheet' | t">×</button>
+        }
+      </div>
+    }
+    <button type="button" class="sheets-tab-add" (click)="addSheet()" [attr.title]="'sheets.addSheet' | t">+</button>
+
+    <div class="sheets-status">
+      @if (stats().count > 0) {
+        <span>{{ 'sheets.count' | t }}: <strong>{{ stats().count }}</strong></span>
+        @if (stats().numCount > 0) {
+          <span>{{ 'sheets.sum' | t }}: <strong>{{ formatNum(stats().sum) }}</strong></span>
+          <span>{{ 'sheets.avg' | t }}: <strong>{{ formatNum(stats().avg) }}</strong></span>
+          <span>{{ 'sheets.min' | t }}: <strong>{{ formatNum(stats().min) }}</strong></span>
+          <span>{{ 'sheets.max' | t }}: <strong>{{ formatNum(stats().max) }}</strong></span>
+        }
+      }
+    </div>
+  </div>
+</div>

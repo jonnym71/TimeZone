@@ -1,0 +1,146 @@
+<div class="document-page" [class.open]="overlay.documentOpen()" role="dialog" aria-label="DOCUMENT">
+  <!-- Top Bar -->
+  <header class="document-topbar">
+    <button class="spark-back" type="button" (click)="close()">
+      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+    </button>
+    <div class="spark-brand document-brand">
+      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M8 4h12l6 6v18a0 0 0 0 1 0 0H8z" fill="none" stroke="#FA7250" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M20 4v6h6" fill="none" stroke="#FA7250" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 16h12M12 20h12M12 24h8" stroke="#FA7250" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>DOCUMENT</span>
+    </div>
+    <input
+      class="document-title-input"
+      type="text"
+      [value]="title()"
+      (input)="onTitleChange($any($event.target).value)"
+      [attr.placeholder]="'doc.titlePlaceholder' | t"
+      aria-label="Document title">
+    <div class="spark-actions">
+      <span class="document-save-hint" [class.visible]="!!savedHint()">{{ 'doc.saved' | t }}</span>
+      <button type="button" class="spark-icon-btn" (click)="undo()" [attr.title]="'doc.undo' | t" aria-label="Undo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5H8"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="redo()" [attr.title]="'doc.redo' | t" aria-label="Redo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 0 0-5 5v0a5 5 0 0 0 5 5h7"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="printDoc()" [attr.title]="'doc.print' | t" aria-label="Print">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="downloadDoc()" [attr.title]="'doc.download' | t" aria-label="Download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="resetDoc()" [attr.title]="'doc.reset' | t" aria-label="Reset">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="document-toolbar">
+    <!-- Heading dropdown -->
+    <select class="spark-select" (change)="insertHeading(+$any($event.target).value)" [attr.title]="'doc.heading' | t">
+      <option value="0">{{ 'doc.style.body' | t }}</option>
+      <option value="1">H1 — {{ 'doc.style.h1' | t }}</option>
+      <option value="2">H2 — {{ 'doc.style.h2' | t }}</option>
+      <option value="3">H3 — {{ 'doc.style.h3' | t }}</option>
+    </select>
+
+    <!-- Font family -->
+    <select class="spark-select" [ngModel]="currentFont()" (ngModelChange)="setFont($event)" [attr.title]="'spark.font' | t">
+      @for (f of fontOptions; track f.value) {
+        <option [value]="f.value" [style.font-family]="f.value">{{ f.label }}</option>
+      }
+    </select>
+
+    <!-- Font size -->
+    <select class="spark-select spark-select-sm" [ngModel]="currentSize()" (ngModelChange)="setSize(+$event)" [attr.title]="'spark.size' | t">
+      @for (s of fontSizeOptions; track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" [class.active]="bold()" (click)="toggleBold()" [attr.title]="'spark.bold' | t" aria-label="Bold"><strong>B</strong></button>
+    <button type="button" class="spark-icon-btn" [class.active]="italic()" (click)="toggleItalic()" [attr.title]="'spark.italic' | t" aria-label="Italic"><em>I</em></button>
+    <button type="button" class="spark-icon-btn" [class.active]="underline()" (click)="toggleUnderline()" [attr.title]="'spark.underline' | t" aria-label="Underline"><u>U</u></button>
+    <button type="button" class="spark-icon-btn" (click)="toggleStrike()" [attr.title]="'doc.strike' | t" aria-label="Strike"><s>S</s></button>
+
+    <div class="spark-tool-divider"></div>
+
+    <label class="spark-color-wrap" [attr.title]="'spark.textColor' | t">
+      <span class="spark-color-letter">A</span>
+      <input type="color" class="spark-color-input" value="#1a1a1a" (input)="setColor($any($event.target).value)" aria-label="Text color">
+    </label>
+    <label class="spark-color-wrap" [attr.title]="'doc.bgColor' | t">
+      <span class="spark-color-letter" style="background:rgba(251,84,43,0.2);border-radius:3px;padding:0 3px;">H</span>
+      <input type="color" class="spark-color-input" value="#FFFF00" (input)="setBg($any($event.target).value)" aria-label="Highlight">
+    </label>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" [class.active]="align() === 'left'" (click)="setAlign('left')" [attr.title]="'spark.alignLeft' | t" aria-label="Align left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" [class.active]="align() === 'center'" (click)="setAlign('center')" [attr.title]="'spark.alignCenter' | t" aria-label="Align center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M5 18h14"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" [class.active]="align() === 'right'" (click)="setAlign('right')" [attr.title]="'spark.alignRight' | t" aria-label="Align right">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M7 18h13"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" [class.active]="align() === 'justify'" (click)="setAlign('justify')" [attr.title]="'doc.alignJustify' | t" aria-label="Justify">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" (click)="insertUnorderedList()" [attr.title]="'doc.bulletList' | t" aria-label="Bullets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="6" r="1.2" fill="currentColor"/><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="5" cy="18" r="1.2" fill="currentColor"/><path d="M9 6h12M9 12h12M9 18h12"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" (click)="insertOrderedList()" [attr.title]="'doc.numberedList' | t" aria-label="Numbers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><text x="3" y="8" font-size="6" fill="currentColor" stroke="none">1.</text><text x="3" y="14" font-size="6" fill="currentColor" stroke="none">2.</text><text x="3" y="20" font-size="6" fill="currentColor" stroke="none">3.</text></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" (click)="outdent()" [attr.title]="'doc.outdent' | t" aria-label="Outdent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M10 18h10"/><path d="M8 9l-3 3 3 3"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" (click)="indent()" [attr.title]="'doc.indent' | t" aria-label="Indent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M10 18h10"/><path d="M4 9l3 3-3 3"/></svg>
+    </button>
+
+    <div class="spark-tool-divider"></div>
+
+    <button type="button" class="spark-icon-btn" (click)="insertLink()" [attr.title]="'doc.link' | t" aria-label="Link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" (click)="insertHorizontalRule()" [attr.title]="'doc.hr' | t" aria-label="Divider">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h16"/><path d="M4 7h2M9 7h2M14 7h2M19 7h1" opacity="0.4"/><path d="M4 17h1M8 17h2M13 17h2M18 17h2" opacity="0.4"/></svg>
+    </button>
+    <button type="button" class="spark-icon-btn" (click)="removeFormat()" [attr.title]="'doc.removeFormat' | t" aria-label="Clear formatting">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h12"/><path d="M4 4l9 16"/><path d="M14 4l-3 6"/><path d="M21 20H7"/></svg>
+    </button>
+  </div>
+
+  <!-- Editor -->
+  <div class="document-canvas-wrap">
+    <div class="document-page-paper">
+      <div
+        class="document-editor"
+        #editor
+        contenteditable="true"
+        spellcheck="true"
+        [attr.data-placeholder]="'doc.placeholder' | t"
+        (input)="onEditorInput()"
+        (keyup)="syncToolbarFromSelection()"
+        (mouseup)="syncToolbarFromSelection()"></div>
+    </div>
+    <div class="document-statusbar">
+      <span>{{ 'doc.words' | t }}: <strong>{{ wordCount() }}</strong></span>
+      <span>{{ 'doc.chars' | t }}: <strong>{{ charCount() }}</strong></span>
+      <span class="document-hint">Strg+B/I/U · Strg+S</span>
+    </div>
+  </div>
+</div>

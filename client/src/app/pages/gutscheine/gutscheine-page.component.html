@@ -7,6 +7,20 @@
     <h1 class="gutscheine-title">{{ 'gutscheine.title' | t }}</h1>
     <p class="gutscheine-intro">{{ 'gutscheine.intro' | t }}</p>
 
+    @if (currentBalance() > 0) {
+      <div class="gutscheine-balance-banner">
+        <span class="balance-banner-icon" aria-hidden="true">€</span>
+        <div class="balance-banner-text">
+          <span class="balance-banner-label">{{ 'gutscheine.balance' | t }}</span>
+          <strong>{{ formatEur(currentBalance()) }}</strong>
+        </div>
+        <label class="balance-banner-toggle">
+          <input type="checkbox" [checked]="payWithCredit()" (change)="payWithCredit.set($any($event.target).checked)">
+          <span>{{ 'gutscheine.payWithCredit' | t }}</span>
+        </label>
+      </div>
+    }
+
     <div class="gutschein-grid">
       @for (v of vouchers; track v.value) {
         <article class="gutschein-card">
@@ -28,6 +42,13 @@
           <div class="gutschein-actions">
             <button type="button" class="btn btn-primary gutschein-buy" (click)="buyForSelf(v)">{{ 'gutscheine.buyForSelf' | t }}</button>
             <button type="button" class="btn btn-outline gutschein-buy" (click)="giftVoucher(v)">{{ 'gutscheine.gift' | t }}</button>
+            @if (payWithCredit() && currentBalance() > 0) {
+              @if (canPayWithCredit(v)) {
+                <span class="gutschein-credit-note ok">{{ 'gutscheine.payWithCreditNote' | t }}</span>
+              } @else {
+                <span class="gutschein-credit-note low">{{ 'gutscheine.payWithCreditTooLow' | t }}</span>
+              }
+            }
           </div>
         </article>
       }
@@ -76,18 +97,6 @@
           }
         </label>
 
-        <label class="firma-add-row">
-          <span>{{ 'gf.name' | t }} <em>*</em></span>
-          <input
-            type="text"
-            class="firma-add-input"
-            [placeholder]="'gf.name.placeholder' | t"
-            required
-            [ngModel]="recipientName()"
-            (ngModelChange)="recipientName.set($event)"
-            name="recipientName">
-        </label>
-
         <p class="gutschein-gift-hint">{{ 'gf.hint' | t }}</p>
 
         <div class="firma-add-actions">
@@ -109,6 +118,9 @@
           <p class="gutschein-success-hint">{{ 'gs.hintSelf' | t }}</p>
         } @else {
           <p class="gutschein-success-hint">{{ 'gs.hintGift' | t : { name: ok.toName } }}</p>
+        }
+        @if (ok.paidFromCredit) {
+          <p class="gutschein-success-credit">{{ 'gutscheine.paidFromCredit' | t : { amount: ok.paidFromCredit } }}</p>
         }
         <button type="button" class="btn btn-primary" (click)="closeSuccess()">{{ 'common.close' | t }}</button>
       </div>

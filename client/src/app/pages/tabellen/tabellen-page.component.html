@@ -2,6 +2,11 @@
   <button class="tabellen-back" type="button" (click)="close()">
     <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
   </button>
+
+  <app-admin-add-button
+    wrapperClass="tabellen-add"
+    [items]="addItems"
+    (itemClick)="onAddItemClick($event)"></app-admin-add-button>
   <div class="samuel-easter-egg" [class.show]="samuelShown()" [attr.aria-hidden]="!samuelShown()">
     <div class="heart-wrapper">
       <svg class="heart-shape" viewBox="0 0 100 100" aria-hidden="true">
@@ -35,7 +40,7 @@
         [placeholder]="'🔍  ' + ('tabellen.search' | t)"
         autocomplete="off"
         [ngModel]="searchValue()"
-        (ngModelChange)="searchValue.set($event)"
+        (ngModelChange)="onSearchInput($event)"
         (keydown)="onSearchKeydown($event)"
         name="tabellenSearch">
       <button type="button" class="search-enter-btn" (click)="onEnterClick()">
@@ -44,7 +49,24 @@
       </button>
     </div>
 
-    <div class="chart-container" [class.hidden]="chartHidden()" [attr.data-tick]="animateTick()">
+    @if (matchedTable(); as t) {
+      <div class="custom-table-display">
+        @if (auth.isAdmin()) {
+          <button type="button" class="custom-table-delete" [attr.aria-label]="'common.delete' | t" [attr.title]="'common.delete' | t" (click)="deleteTable(t.id, $event)">🗑</button>
+        }
+        <div class="custom-table-title">{{ t.title }}</div>
+        <img class="custom-table-image" [src]="t.image" [alt]="t.title">
+      </div>
+    }
+
+    @if (showNotFound()) {
+      <div class="tabellen-not-found">
+        <div class="not-found-icon" aria-hidden="true">🔍</div>
+        <div class="not-found-text">{{ 'tabellen.notFound' | t }}</div>
+      </div>
+    }
+
+    <div class="chart-container" [class.hidden]="!showDefaultChart()" [attr.data-tick]="animateTick()">
       <div class="chart-title">{{ 'tabellen.chartTitle' | t }}</div>
       <div class="chart-subtitle">{{ 'tabellen.chartSubtitle' | t }}</div>
       <svg class="popularity-chart" viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" [attr.aria-label]="'tabellen.chartAria' | t">
@@ -105,4 +127,47 @@
       </div>
     </div>
   </div>
+
+  @if (showAddForm()) {
+    <div class="firma-add-overlay" role="dialog" aria-modal="true" [attr.aria-label]="'tabellen.add.title' | t" (click)="onFormBackdropClick($event)">
+      <form class="firma-add-form" autocomplete="off" (submit)="saveNewTable($event)">
+        <button type="button" class="firma-add-close" [attr.aria-label]="'common.close' | t" (click)="closeAddForm()">✕</button>
+        <h3>{{ 'tabellen.add.title' | t }}</h3>
+
+        <label class="firma-add-row">
+          <span>{{ 'tabellen.add.titleLabel' | t }} <em>*</em></span>
+          <input
+            type="text"
+            class="firma-add-input"
+            [placeholder]="'tabellen.add.titlePlaceholder' | t"
+            required
+            [ngModel]="newTitle()"
+            (ngModelChange)="newTitle.set($event)"
+            name="newTableTitle">
+        </label>
+
+        <label class="firma-add-row">
+          <span>{{ 'tabellen.add.fileLabel' | t }} <em>*</em></span>
+          <div class="firma-file-row">
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              style="display:none"
+              (change)="onFileSelected($event)">
+            <button type="button" class="btn btn-outline" (click)="fileInput.click()">{{ 'tabellen.add.pickFile' | t }}</button>
+            <span class="firma-file-name">{{ newFileName() ?? ('tabellen.add.noFile' | t) }}</span>
+          </div>
+          @if (newImage()) {
+            <img class="firma-file-preview" [src]="newImage()" alt="">
+          }
+        </label>
+
+        <div class="firma-add-actions">
+          <button type="button" class="btn btn-outline" (click)="closeAddForm()">{{ 'common.cancel' | t }}</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newTitle().trim() || !newImage()">{{ 'common.save' | t }}</button>
+        </div>
+      </form>
+    </div>
+  }
 </div>

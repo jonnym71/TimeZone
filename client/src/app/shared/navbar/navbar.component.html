@@ -14,6 +14,12 @@
       <span class="login-label">{{ auth.user()?.username ?? ('nav.login' | t) }}</span>
     </button>
     @if (auth.loggedIn()) {
+      <button class="navbar-balance" type="button" [class.flash]="balanceFlash()" [attr.title]="'navbar.balance' | t" [attr.aria-label]="'navbar.balance' | t" (click)="balanceClick($event)">
+        <span class="balance-coin" aria-hidden="true">€</span>
+        <span class="balance-value">{{ formatBalance(auth.user()?.credit ?? 0) }}</span>
+      </button>
+    }
+    @if (auth.loggedIn()) {
       <button class="user-gear" type="button" [attr.aria-label]="'nav.profileMenu' | t" [class.active]="overlay.profileOpen()" (click)="gearClick($event)">⚙</button>
     }
   </div>

@@ -24,7 +24,7 @@ export class RanksService {
     },
     {
       key: 'Gold', color: '#ffd24d', price: '5,99€ / Monat',
-      perks: ['Alles von Silber', 'Büro-Modus (eingeschränkt)'],
+      perks: ['Alles von Silber', 'TIME-ZONE Games', 'TIME-ZONE Sound', 'TIME-ZONE Academy', 'Büro-Modus (eingeschränkt)'],
     },
     {
       key: 'Platin', color: '#9bd3e6', price: '12,99€ / Monat',

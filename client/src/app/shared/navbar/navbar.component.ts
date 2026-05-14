@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
@@ -16,7 +16,23 @@ export class NavbarComponent {
   readonly overlay = inject(OverlayService);
   readonly language = inject(LanguageService);
 
+  readonly balanceFlash = signal(false);
+  private flashTimer: number | null = null;
+  private prevCredit = this.auth.user()?.credit ?? 0;
+
   @ViewChild('langDetails', { static: false }) langDetails?: ElementRef<HTMLDetailsElement>;
+
+  constructor() {
+    effect(() => {
+      const credit = this.auth.user()?.credit ?? 0;
+      if (credit > this.prevCredit) {
+        this.balanceFlash.set(true);
+        if (this.flashTimer !== null) clearTimeout(this.flashTimer);
+        this.flashTimer = window.setTimeout(() => this.balanceFlash.set(false), 2400);
+      }
+      this.prevCredit = credit;
+    });
+  }
 
   loginClick(): void {
     if (this.auth.loggedIn()) this.overlay.toggleProfile();
@@ -35,7 +51,7 @@ export class NavbarComponent {
 
   openBuero(event: MouseEvent): void {
     event.preventDefault();
-    this.overlay.open('Büro', 'coming-soon');
+    this.overlay.openBuero();
   }
 
   openGutscheine(event: MouseEvent): void {
@@ -48,5 +64,14 @@ export class NavbarComponent {
     if (this.langDetails?.nativeElement) {
       this.langDetails.nativeElement.removeAttribute('open');
     }
+  }
+
+  balanceClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.overlay.openGutscheine();
+  }
+
+  formatBalance(value: number): string {
+    return value.toFixed(2).replace('.', ',');
   }
 }

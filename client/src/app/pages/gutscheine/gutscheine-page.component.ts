@@ -35,8 +35,17 @@ export class GutscheinePageComponent {
   readonly mode = signal<'gift' | 'self'>('gift');
   readonly recipientEmail = signal('');
   readonly recipientName = signal('');
-  readonly successMessage = signal<{ amount: string; toName: string; toEmail: string; selfClaimed: boolean } | null>(null);
+  readonly successMessage = signal<{ amount: string; toName: string; toEmail: string; selfClaimed: boolean; paidFromCredit?: string } | null>(null);
   readonly emailError = signal(false);
+  readonly payWithCredit = signal(true);
+
+  currentBalance(): number {
+    return this.auth.user()?.credit ?? 0;
+  }
+
+  canPayWithCredit(v: Voucher): boolean {
+    return this.currentBalance() >= v.price;
+  }
 
   constructor() {
     let prevOpen = false;
@@ -90,20 +99,26 @@ export class GutscheinePageComponent {
     this.showGiftForm.set(true);
   }
 
-  private completeSelfPurchase(v: Voucher): void {
+  private async completeSelfPurchase(v: Voucher): Promise<void> {
     const user = this.auth.user();
     if (!user) {
       this.pendingVoucher.set(null);
       this.overlay.open('Anmelden', 'login');
       return;
     }
-    this.auth.sendGift(user.email, v.value);
+    const useCredit = this.payWithCredit() && this.canPayWithCredit(v);
+    if (useCredit) {
+      this.auth.spendCredit(v.price);
+    }
+    await this.auth.sendGift(user.email, v.value);
     this.auth.addExpense(v.price);
+    const remaining = this.auth.user()?.credit ?? 0;
     this.successMessage.set({
       amount: this.formatEur(v.value),
       toName: user.username,
       toEmail: user.email,
       selfClaimed: true,
+      paidFromCredit: useCredit ? this.formatEur(remaining) : undefined,
     });
     this.pendingVoucher.set(null);
     this.showSuccess.set(true);
@@ -125,32 +140,37 @@ export class GutscheinePageComponent {
     if (event.target === event.currentTarget) this.closeGiftForm();
   }
 
-  submitGift(event: Event): void {
+  async submitGift(event: Event): Promise<void> {
     event.preventDefault();
     const v = this.pendingVoucher();
     if (!v) return;
     const email = this.recipientEmail().trim();
-    const name = this.recipientName().trim();
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRe.test(email) || !name) {
-      this.emailError.set(!emailRe.test(email));
+    if (!emailRe.test(email)) {
+      this.emailError.set(true);
       return;
     }
-    this.auth.sendGift(email, v.value);
+    const displayName = email.split('@')[0] ?? email;
+    const useCredit = this.payWithCredit() && this.canPayWithCredit(v);
+    if (useCredit) {
+      this.auth.spendCredit(v.price);
+    }
+    await this.auth.sendGift(email, v.value);
     this.auth.addExpense(v.price);
     const currentUser = this.auth.user();
     const selfClaimed = currentUser !== null && currentUser.email.toLowerCase() === email.toLowerCase();
+    const remaining = currentUser?.credit ?? 0;
     this.successMessage.set({
       amount: this.formatEur(v.value),
-      toName: name,
+      toName: displayName,
       toEmail: email,
       selfClaimed,
+      paidFromCredit: useCredit ? this.formatEur(remaining) : undefined,
     });
     this.showGiftForm.set(false);
     this.showSuccess.set(true);
     this.pendingVoucher.set(null);
     this.recipientEmail.set('');
-    this.recipientName.set('');
   }
 
   closeSuccess(): void {

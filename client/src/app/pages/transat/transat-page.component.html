@@ -6,26 +6,6 @@
     <h1 class="transat-title">{{ 'transat.title' | t }}</h1>
     <p class="transat-subtitle">{{ 'transat.subtitle' | t }}</p>
 
-    <div class="plane-scene" aria-hidden="true">
-      <div class="plane-runway"></div>
-      <svg class="plane-svg" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
-        <g class="plane-gear">
-          <line x1="55" y1="48" x2="55" y2="55" stroke="#3a4050" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="55" cy="57" r="2.2" fill="#1a1d28" stroke="#5a606a" stroke-width="0.8"/>
-          <line x1="118" y1="48" x2="118" y2="55" stroke="#3a4050" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="115" cy="57" r="2.4" fill="#1a1d28" stroke="#5a606a" stroke-width="0.8"/>
-          <circle cx="121" cy="57" r="2.4" fill="#1a1d28" stroke="#5a606a" stroke-width="0.8"/>
-        </g>
-        <path d="M 30 40 Q 32 32 42 32 L 145 32 Q 165 32 185 40 Q 165 48 145 48 L 42 48 Q 32 48 30 40 Z" fill="#ffffff" stroke="#5a606a" stroke-width="1.2"/>
-        <path d="M 35 40 L 25 16 L 50 32 L 50 40 Z" fill="#ffffff" stroke="#5a606a" stroke-width="1.2"/>
-        <path d="M 100 32 L 75 12 L 110 30 Z" fill="#c0c5d0" stroke="#5a606a" stroke-width="1.2"/>
-        <path d="M 100 48 L 75 68 L 110 50 Z" fill="#a0aec8" stroke="#5a606a" stroke-width="1.2"/>
-        <rect x="55" y="37" width="95" height="2.5" fill="#0057ff" rx="1"/>
-        <path d="M 165 35 Q 180 38 184 40 Q 180 42 165 45 Z" fill="#0057ff"/>
-        <text x="32" y="28" font-family="sans-serif" font-size="6" font-weight="700" fill="#0057ff">TZ</text>
-      </svg>
-    </div>
-
     <form class="transat-form" autocomplete="off" (submit)="$event.preventDefault()">
       <div class="transat-input-row">
         <label for="transatFrom">{{ 'transat.from' | t }}</label>
@@ -152,5 +132,95 @@
         }
       }
     </div>
+
+    <section class="airline-inbox" aria-label="Airline-Postfach (Beispieldaten)">
+      <header class="airline-inbox-head">
+        <span class="airline-inbox-dot" aria-hidden="true"></span>
+        <h2>Posteingang</h2>
+        <span class="airline-inbox-badge" title="Diese Mails sind frei erfunden — keine echten Flugpreise.">Beispiel</span>
+        <span class="airline-inbox-count">6</span>
+      </header>
+      <p class="airline-inbox-note">⚠ Demo-Daten zur Veranschaulichung — keine echten Angebote.</p>
+      <ul class="airline-inbox-list">
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#cc0000;--fg:#fff">AA</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">Austrian Airlines</strong>
+              <span class="airline-time">14:32</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">Ihr Flug aus Graz</span>
+              <span class="airline-price">45 €</span>
+            </div>
+          </div>
+        </li>
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#05164d;--fg:#ffcc00">LH</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">Lufthansa</strong>
+              <span class="airline-time">12:18</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">München → Berlin · Direktflug</span>
+              <span class="airline-price">89 €</span>
+            </div>
+          </div>
+        </li>
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#073590;--fg:#f1c40f">RY</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">Ryanair</strong>
+              <span class="airline-time">10:04</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">Flash Sale: Wien → Rom</span>
+              <span class="airline-price">19 €</span>
+            </div>
+          </div>
+        </li>
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#c6086c;--fg:#fff">WZ</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">Wizz Air</strong>
+              <span class="airline-time">Gestern</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">Last Minute Tirana</span>
+              <span class="airline-price">29 €</span>
+            </div>
+          </div>
+        </li>
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#00a1de;--fg:#fff">KL</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">KLM</strong>
+              <span class="airline-time">Mo.</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">Amsterdam Weekend Trips</span>
+              <span class="airline-price">112 €</span>
+            </div>
+          </div>
+        </li>
+        <li class="airline-mail">
+          <span class="airline-avatar" style="--bg:#075aaa;--fg:#fff">BA</span>
+          <div class="airline-mail-body">
+            <div class="airline-mail-row">
+              <strong class="airline-sender">British Airways</strong>
+              <span class="airline-time">So.</span>
+            </div>
+            <div class="airline-mail-row">
+              <span class="airline-subject">Premium Economy Upgrade verfügbar</span>
+              <span class="airline-price">+ 240 €</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
   </div>
 </div>

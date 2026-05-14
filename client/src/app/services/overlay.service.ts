@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type OverlayMode = 'coming-soon' | 'not-yet' | 'login' | 'rank-required';
+export type OverlayMode = 'coming-soon' | 'not-yet' | 'login' | 'rank-required' | 'admin-only';
 
 export interface OverlayState {
   mode: OverlayMode;
@@ -19,6 +19,13 @@ export class OverlayService {
   readonly profileOpen = signal(false);
   readonly newsOpen = signal(false);
   readonly gutscheineOpen = signal(false);
+  readonly bueroOpen = signal(false);
+  readonly sparkOpen = signal(false);
+  readonly documentOpen = signal(false);
+  readonly computeOpen = signal(false);
+  readonly inboxOpen = signal(false);
+  readonly driveOpen = signal(false);
+  readonly sheetsOpen = signal(false);
 
   open(label: string, mode: OverlayMode = 'coming-soon'): void {
     this.state.set({ mode, label, open: true });
@@ -43,6 +50,27 @@ export class OverlayService {
 
   openGutscheine(): void { this.gutscheineOpen.set(true); }
   closeGutscheine(): void { this.gutscheineOpen.set(false); }
+
+  openBuero(): void { this.bueroOpen.set(true); }
+  closeBuero(): void { this.bueroOpen.set(false); }
+
+  openSpark(): void { this.sparkOpen.set(true); }
+  closeSpark(): void { this.sparkOpen.set(false); }
+
+  openDocument(): void { this.documentOpen.set(true); }
+  closeDocument(): void { this.documentOpen.set(false); }
+
+  openCompute(): void { this.computeOpen.set(true); }
+  closeCompute(): void { this.computeOpen.set(false); }
+
+  openInbox(): void { this.inboxOpen.set(true); }
+  closeInbox(): void { this.inboxOpen.set(false); }
+
+  openDrive(): void { this.driveOpen.set(true); }
+  closeDrive(): void { this.driveOpen.set(false); }
+
+  openSheets(): void { this.sheetsOpen.set(true); }
+  closeSheets(): void { this.sheetsOpen.set(false); }
 
   toggleProfile(): void { this.profileOpen.update(v => !v); }
   closeProfile(): void { this.profileOpen.set(false); }

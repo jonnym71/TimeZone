@@ -1,0 +1,150 @@
+<div class="drive-page" [class.open]="overlay.driveOpen()" role="dialog" aria-label="DRIVE">
+  <header class="drive-topbar">
+    <button class="spark-back" type="button" (click)="close()">
+      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+    </button>
+    <div class="spark-brand drive-brand">
+      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M3 9a2 2 0 0 1 2-2h7l3 3h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#9E2B0E" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <span>DRIVE</span>
+    </div>
+    <div class="drive-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" [attr.placeholder]="'drive.search' | t">
+    </div>
+    <div class="spark-actions">
+      <label class="drive-upload-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14"/><path d="M6 9l6-6 6 6"/><path d="M4 21h16"/></svg>
+        {{ 'drive.upload' | t }}
+        <input type="file" multiple (change)="onFilesSelected($any($event.target))" hidden>
+      </label>
+      <button type="button" class="drive-folder-btn" (click)="createFolder()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 12v6M9 15h6"/></svg>
+        {{ 'drive.newFolder' | t }}
+      </button>
+    </div>
+  </header>
+
+  <div class="drive-subbar">
+    <nav class="drive-breadcrumbs">
+      <button type="button" (click)="goRoot()" [class.active]="currentFolderId() === null">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+        {{ 'drive.root' | t }}
+      </button>
+      @for (b of breadcrumbs(); track b.id) {
+        <span class="drive-bc-sep">›</span>
+        <button type="button" (click)="goToBreadcrumb(b)" [class.active]="b.id === currentFolderId()">{{ b.name }}</button>
+      }
+    </nav>
+    <div class="drive-view-toggle">
+      <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')" [attr.aria-label]="'drive.viewGrid' | t">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </button>
+      <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')" [attr.aria-label]="'drive.viewList' | t">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="drive-main">
+    @if (currentFolders().length === 0 && currentFiles().length === 0) {
+      <div class="drive-empty">
+        @if (searchQuery()) {
+          <p>{{ 'drive.noResults' | t }}</p>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <p>{{ 'drive.emptyFolder' | t }}</p>
+        }
+      </div>
+    } @else if (viewMode() === 'grid') {
+      <div class="drive-grid">
+        @for (f of currentFolders(); track f.id) {
+          <article class="drive-card drive-card-folder" (dblclick)="enterFolder(f.id)" [class.selected]="selectedId() === f.id" (click)="selectedId.set(f.id)">
+            <div class="drive-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="rgba(158,43,14,0.18)"/></svg>
+            </div>
+            <div class="drive-card-name" [attr.title]="f.name">{{ f.name }}</div>
+            <div class="drive-card-actions" (click)="$event.stopPropagation()">
+              <button type="button" (click)="enterFolder(f.id)" [attr.title]="'drive.open' | t" aria-label="Open">↗</button>
+              <button type="button" (click)="renameFolder(f)" [attr.title]="'drive.rename' | t" aria-label="Rename">✎</button>
+              <button type="button" (click)="moveFolder(f)" [attr.title]="'drive.move' | t" aria-label="Move">↔</button>
+              <button type="button" class="drive-danger" (click)="deleteFolder(f)" [attr.title]="'drive.delete' | t" aria-label="Delete">×</button>
+            </div>
+          </article>
+        }
+        @for (f of currentFiles(); track f.id) {
+          <article class="drive-card drive-card-file" [class.selected]="selectedId() === f.id" (click)="selectedId.set(f.id)" (dblclick)="downloadFile(f)">
+            <div class="drive-card-icon" [attr.data-kind]="iconForFile(f)">
+              @if (isImage(f)) {
+                <img [src]="f.dataUrl" [alt]="f.name">
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 3H5v18h14V8z"/>
+                  <path d="M14 3v5h5"/>
+                </svg>
+              }
+            </div>
+            <div class="drive-card-name" [attr.title]="f.name">{{ f.name }}</div>
+            <div class="drive-card-meta">{{ formatBytes(f.size) }}</div>
+            <div class="drive-card-actions" (click)="$event.stopPropagation()">
+              <button type="button" (click)="downloadFile(f)" [attr.title]="'drive.download' | t" aria-label="Download">↓</button>
+              <button type="button" (click)="renameFile(f)" [attr.title]="'drive.rename' | t" aria-label="Rename">✎</button>
+              <button type="button" (click)="moveFile(f)" [attr.title]="'drive.move' | t" aria-label="Move">↔</button>
+              <button type="button" class="drive-danger" (click)="deleteFile(f)" [attr.title]="'drive.delete' | t" aria-label="Delete">×</button>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <table class="drive-list">
+        <thead>
+          <tr>
+            <th>{{ 'drive.col.name' | t }}</th>
+            <th>{{ 'drive.col.size' | t }}</th>
+            <th>{{ 'drive.col.modified' | t }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of currentFolders(); track f.id) {
+            <tr class="drive-row drive-row-folder" (dblclick)="enterFolder(f.id)" [class.selected]="selectedId() === f.id" (click)="selectedId.set(f.id)">
+              <td>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="rgba(158,43,14,0.18)"/></svg>
+                <span>{{ f.name }}</span>
+              </td>
+              <td>—</td>
+              <td>{{ formatDate(f.createdAt) }}</td>
+              <td class="drive-row-actions" (click)="$event.stopPropagation()">
+                <button type="button" (click)="enterFolder(f.id)" aria-label="Open">↗</button>
+                <button type="button" (click)="renameFolder(f)" aria-label="Rename">✎</button>
+                <button type="button" (click)="moveFolder(f)" aria-label="Move">↔</button>
+                <button type="button" class="drive-danger" (click)="deleteFolder(f)" aria-label="Delete">×</button>
+              </td>
+            </tr>
+          }
+          @for (f of currentFiles(); track f.id) {
+            <tr class="drive-row drive-row-file" (dblclick)="downloadFile(f)" [class.selected]="selectedId() === f.id" (click)="selectedId.set(f.id)">
+              <td>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8z"/><path d="M14 3v5h5"/></svg>
+                <span>{{ f.name }}</span>
+              </td>
+              <td>{{ formatBytes(f.size) }}</td>
+              <td>{{ formatDate(f.modifiedAt) }}</td>
+              <td class="drive-row-actions" (click)="$event.stopPropagation()">
+                <button type="button" (click)="downloadFile(f)" aria-label="Download">↓</button>
+                <button type="button" (click)="renameFile(f)" aria-label="Rename">✎</button>
+                <button type="button" (click)="moveFile(f)" aria-label="Move">↔</button>
+                <button type="button" class="drive-danger" (click)="deleteFile(f)" aria-label="Delete">×</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </main>
+
+  <footer class="drive-statusbar">
+    <span>{{ totalFolders() }} {{ 'drive.foldersLabel' | t }} · {{ totalFiles() }} {{ 'drive.filesLabel' | t }} · {{ formatBytes(totalSize()) }}</span>
+  </footer>
+</div>

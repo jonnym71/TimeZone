@@ -13,7 +13,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 })
 export class ComingSoonOverlayComponent implements OnDestroy {
   private overlayService = inject(OverlayService);
-  private auth = inject(AuthService);
+  readonly auth = inject(AuthService);
   private ranks = inject(RanksService);
 
   readonly state = this.overlayService.state;
@@ -22,6 +22,49 @@ export class ComingSoonOverlayComponent implements OnDestroy {
     const key = this.state().requiredRank;
     return key ? this.ranks.ranks.find(r => r.key === key) ?? null : null;
   });
+
+  readonly buyStep = signal<'idle' | 'confirm' | 'success' | 'no-login' | 'no-credit'>('idle');
+
+  parsePrice(p: string): number {
+    const match = p.match(/(\d+),(\d+)/);
+    return match ? parseInt(match[1], 10) + parseInt(match[2], 10) / 100 : 0;
+  }
+
+  formatPrice(p: number): string {
+    return p.toFixed(2).replace('.', ',') + ' €';
+  }
+
+  startBuyRank(): void {
+    if (!this.auth.loggedIn()) {
+      this.buyStep.set('no-login');
+      return;
+    }
+    this.buyStep.set('confirm');
+  }
+
+  confirmBuyRank(): void {
+    const rank = this.requiredRank();
+    if (!rank) return;
+    const price = this.parsePrice(rank.price);
+    const credit = this.auth.user()?.credit ?? 0;
+    if (credit < price) {
+      this.buyStep.set('no-credit');
+      return;
+    }
+    this.auth.spendCredit(price);
+    this.auth.addExpense(price);
+    this.auth.updateState({ rank: rank.key });
+    this.buyStep.set('success');
+  }
+
+  cancelBuyRank(): void {
+    this.buyStep.set('idle');
+  }
+
+  finishBuy(): void {
+    this.buyStep.set('idle');
+    this.close();
+  }
 
   readonly alarmCount = signal(10);
   private countdownTimer: number | null = null;
@@ -56,6 +99,7 @@ export class ComingSoonOverlayComponent implements OnDestroy {
     }
     if (this.prevOpen && !s.open) {
       this.resetLoginForm();
+      this.buyStep.set('idle');
     }
     this.prevOpen = s.open;
     this.prevMode = s.mode;

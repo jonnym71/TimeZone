@@ -1,0 +1,409 @@
+<div class="spark-page" [class.open]="overlay.sparkOpen()" [class.present]="presentMode()" role="dialog" aria-label="PROJECT">
+  @if (!presentMode()) {
+    <!-- ===== Top Bar ===== -->
+    <header class="spark-topbar">
+      <button class="spark-back" type="button" (click)="close()">
+        <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+      </button>
+      <div class="spark-brand">
+        <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="3" y="5" width="26" height="20" rx="3" fill="none" stroke="#FB542B" stroke-width="2"/>
+          <path d="M17 9 L11 17 H15 L13 23 L21 14 H17 L19 9 Z" fill="#FB542B"/>
+          <circle cx="6" cy="28" r="1" fill="#FB542B"/>
+          <circle cx="10" cy="28" r="1" fill="#FB542B"/>
+        </svg>
+        <span>PROJECT</span>
+      </div>
+      <div class="spark-actions">
+        <button type="button" class="spark-icon-btn" (click)="resetDoc()" [attr.title]="'spark.reset' | t" aria-label="Reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7"/>
+            <path d="M3 4v5h5"/>
+          </svg>
+        </button>
+        <button type="button" class="spark-present-btn" (click)="enterPresent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6,4 20,12 6,20" fill="currentColor"/>
+          </svg>
+          {{ 'spark.present' | t }}
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== Toolbar ===== -->
+    <div class="spark-toolbar">
+      <!-- Region indicator -->
+      <div class="spark-tool-group">
+        <span class="spark-region-label">
+          @if (selectedRegion() === 'title') { {{ 'spark.region.title' | t }} }
+          @else if (selectedRegion() === 'body') { {{ 'spark.region.body' | t }} }
+          @else { <em>{{ 'spark.region.none' | t }}</em> }
+        </span>
+      </div>
+
+      <!-- Font family -->
+      <select
+        class="spark-select"
+        [ngModel]="activeRegion()?.fontFamily ?? ''"
+        (ngModelChange)="setFontFamily($event)"
+        [disabled]="!selectedRegion()"
+        [attr.title]="'spark.font' | t">
+        @for (f of fontOptions; track f.value) {
+          <option [value]="f.value" [style.font-family]="f.value">{{ f.label }}</option>
+        }
+      </select>
+
+      <!-- Font size -->
+      <select
+        class="spark-select spark-select-sm"
+        [ngModel]="activeRegion()?.fontSize ?? ''"
+        (ngModelChange)="setFontSize(+$event)"
+        [disabled]="!selectedRegion()"
+        [attr.title]="'spark.size' | t">
+        @for (s of fontSizeOptions; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+
+      <div class="spark-tool-divider"></div>
+
+      <!-- Bold / Italic / Underline -->
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.bold" [disabled]="!selectedRegion()" (click)="toggleBold()" [attr.title]="'spark.bold' | t" aria-label="Bold">
+        <strong>B</strong>
+      </button>
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.italic" [disabled]="!selectedRegion()" (click)="toggleItalic()" [attr.title]="'spark.italic' | t" aria-label="Italic">
+        <em>I</em>
+      </button>
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.underline" [disabled]="!selectedRegion()" (click)="toggleUnderline()" [attr.title]="'spark.underline' | t" aria-label="Underline">
+        <u>U</u>
+      </button>
+
+      <div class="spark-tool-divider"></div>
+
+      <!-- Alignment -->
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.align === 'left'" [disabled]="!selectedRegion()" (click)="setAlign('left')" [attr.title]="'spark.alignLeft' | t" aria-label="Align left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h13"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.align === 'center'" [disabled]="!selectedRegion()" (click)="setAlign('center')" [attr.title]="'spark.alignCenter' | t" aria-label="Align center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M5 18h14"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.align === 'right'" [disabled]="!selectedRegion()" (click)="setAlign('right')" [attr.title]="'spark.alignRight' | t" aria-label="Align right">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M10 12h10M7 18h13"/></svg>
+      </button>
+
+      <div class="spark-tool-divider"></div>
+
+      <!-- Text color -->
+      <label class="spark-color-wrap" [attr.title]="'spark.textColor' | t">
+        <span class="spark-color-letter" [style.color]="activeRegion()?.color">A</span>
+        <input
+          type="color"
+          class="spark-color-input"
+          [value]="activeRegion()?.color ?? '#000000'"
+          (input)="setColor($any($event.target).value)"
+          [disabled]="!selectedRegion()"
+          aria-label="Text color">
+      </label>
+
+      <!-- Insert elements -->
+      <div class="spark-tool-divider"></div>
+      <span class="spark-tool-label">{{ 'spark.insert' | t }}</span>
+      <button type="button" class="spark-icon-btn" (click)="addElement('text')" [attr.title]="'spark.insert.text' | t" aria-label="Text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 6h14M12 6v14"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="addElement('rect')" [attr.title]="'spark.insert.rect' | t" aria-label="Rectangle">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="addElement('ellipse')" [attr.title]="'spark.insert.ellipse' | t" aria-label="Ellipse">
+        <svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="12" rx="8" ry="6"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="addElement('line')" [attr.title]="'spark.insert.line' | t" aria-label="Line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h16"/></svg>
+      </button>
+      <button type="button" class="spark-icon-btn" (click)="addElement('arrow')" [attr.title]="'spark.insert.arrow' | t" aria-label="Arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 7l5 5-5 5"/></svg>
+      </button>
+      <label class="spark-icon-btn" [attr.title]="'spark.insert.image' | t" aria-label="Image" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 18l-6-6-8 8"/></svg>
+        <input type="file" accept="image/*" (change)="onImageFileSelected($any($event.target))" hidden>
+      </label>
+
+      <!-- Element actions (only when selected) -->
+      @if (selectedElement(); as sel) {
+        <div class="spark-tool-divider"></div>
+        <button type="button" class="spark-icon-btn" (click)="duplicateSelectedElement()" [attr.title]="'spark.duplicate' | t" aria-label="Duplicate">⧉</button>
+        <button type="button" class="spark-icon-btn" (click)="bringForward()" [attr.title]="'spark.bringForward' | t" aria-label="Forward">↑</button>
+        <button type="button" class="spark-icon-btn" (click)="sendBackward()" [attr.title]="'spark.sendBackward' | t" aria-label="Backward">↓</button>
+        @if (sel.type === 'text') {
+          <label class="spark-color-wrap" [attr.title]="'spark.textColor' | t">
+            <span class="spark-color-letter" [style.color]="sel.color">A</span>
+            <input type="color" class="spark-color-input" [value]="sel.color ?? '#000000'" (input)="patchElement(sel.id, { color: $any($event.target).value })" aria-label="Text color">
+          </label>
+        } @else if (sel.type === 'rect' || sel.type === 'ellipse') {
+          <label class="spark-color-wrap" [attr.title]="'spark.fillColor' | t">
+            <span class="spark-color-letter" style="background:currentColor;color:transparent;border-radius:3px;width:14px;height:14px;display:inline-block;" [style.background]="sel.fill"></span>
+            <input type="color" class="spark-color-input" [value]="sel.fill ?? '#FB542B'" (input)="patchElement(sel.id, { fill: $any($event.target).value })" aria-label="Fill">
+          </label>
+        } @else if (sel.type === 'line' || sel.type === 'arrow') {
+          <label class="spark-color-wrap" [attr.title]="'spark.strokeColor' | t">
+            <span class="spark-color-letter" [style.color]="sel.stroke">/</span>
+            <input type="color" class="spark-color-input" [value]="sel.stroke ?? '#000000'" (input)="patchElement(sel.id, { stroke: $any($event.target).value })" aria-label="Stroke">
+          </label>
+        }
+        <button type="button" class="spark-icon-btn" (click)="deleteSelectedElement()" [attr.title]="'spark.delete' | t" aria-label="Delete" style="color:#ff6b3d">×</button>
+      }
+
+      <!-- Slide background -->
+      <div class="spark-tool-divider"></div>
+      <span class="spark-tool-label">{{ 'spark.bg' | t }}</span>
+      <div class="spark-bg-swatches">
+        @for (c of bgPresets; track c) {
+          <button
+            type="button"
+            class="spark-bg-swatch"
+            [class.active]="currentSlide().background === c"
+            [style.background]="c"
+            (click)="setBackground(c)"
+            [attr.aria-label]="'BG ' + c"></button>
+        }
+        <label class="spark-bg-custom" [attr.title]="'spark.bgCustom' | t">
+          <span>+</span>
+          <input type="color" [value]="currentSlide().background" (input)="setBackground($any($event.target).value)" aria-label="Custom background">
+        </label>
+      </div>
+    </div>
+
+    <!-- ===== Main: sidebar + canvas ===== -->
+    <div class="spark-main">
+      <!-- Slides sidebar -->
+      <aside class="spark-sidebar" aria-label="Folienliste">
+        <div class="spark-sidebar-head">
+          <span>{{ 'spark.slides' | t }} ({{ doc().slides.length }})</span>
+          <button type="button" class="spark-icon-btn spark-icon-btn-sm" (click)="addSlide()" [attr.title]="'spark.addSlide' | t" aria-label="Add slide">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <ol class="spark-slide-list">
+          @for (s of doc().slides; track s.id; let i = $index) {
+            <li class="spark-slide-thumb" [class.active]="i === currentIndex()" (click)="selectSlide(i)">
+              <div class="spark-thumb-num">{{ i + 1 }}</div>
+              <div class="spark-thumb-preview" [style.background]="s.background">
+                <div class="spark-thumb-title"
+                     [style.color]="s.title.color"
+                     [style.font-weight]="s.title.bold ? 700 : 400"
+                     [style.font-style]="s.title.italic ? 'italic' : 'normal'"
+                     [style.text-align]="s.title.align">{{ s.title.text }}</div>
+                <div class="spark-thumb-body"
+                     [style.color]="s.body.color"
+                     [style.text-align]="s.body.align">{{ s.body.text }}</div>
+              </div>
+              <div class="spark-thumb-actions" (click)="$event.stopPropagation()">
+                <button type="button" class="spark-icon-btn spark-icon-btn-xs" (click)="moveSlideUp(i)" [disabled]="i === 0" [attr.title]="'spark.moveUp' | t" aria-label="Up">↑</button>
+                <button type="button" class="spark-icon-btn spark-icon-btn-xs" (click)="moveSlideDown(i)" [disabled]="i === doc().slides.length - 1" [attr.title]="'spark.moveDown' | t" aria-label="Down">↓</button>
+                <button type="button" class="spark-icon-btn spark-icon-btn-xs" (click)="duplicateSlide(i)" [attr.title]="'spark.duplicate' | t" aria-label="Duplicate">⧉</button>
+                <button type="button" class="spark-icon-btn spark-icon-btn-xs spark-icon-btn-danger" (click)="deleteSlide(i)" [disabled]="doc().slides.length === 1" [attr.title]="'spark.delete' | t" aria-label="Delete">×</button>
+              </div>
+            </li>
+          }
+        </ol>
+      </aside>
+
+      <!-- Canvas -->
+      <section class="spark-canvas-wrap" aria-label="Folien-Canvas">
+        <div
+          class="spark-canvas"
+          [style.background]="currentSlide().background"
+          (pointermove)="onPointerMove($event)"
+          (pointerup)="onPointerUp($event)"
+          (click)="clearElementSelection()">
+
+          <!-- Frei platzierbare Elemente (Z-sortiert) -->
+          @for (el of slideElements(); track el.id) {
+            <div
+              class="spark-element"
+              [class.selected]="selectedElementId() === el.id"
+              [class.editing]="editingElementId() === el.id"
+              [attr.data-type]="el.type"
+              [style.left.%]="el.x"
+              [style.top.%]="el.y"
+              [style.width.%]="el.w"
+              [style.height.%]="el.h"
+              [style.z-index]="100 + el.zIndex"
+              (click)="$event.stopPropagation()"
+              (pointerdown)="startElementDrag($event, el.id)">
+
+              @if (el.type === 'text') {
+                <div
+                  class="spark-element-text"
+                  [class.editing]="editingElementId() === el.id"
+                  [attr.contenteditable]="editingElementId() === el.id"
+                  spellcheck="false"
+                  [style.font-family]="el.fontFamily"
+                  [style.font-size.px]="el.fontSize"
+                  [style.font-weight]="el.bold ? 700 : 400"
+                  [style.font-style]="el.italic ? 'italic' : 'normal'"
+                  [style.text-decoration]="el.underline ? 'underline' : 'none'"
+                  [style.color]="el.color"
+                  [style.text-align]="el.align"
+                  (dblclick)="startEditingElement(el.id, $event)"
+                  (input)="updateElementText(el.id, $any($event.target).innerText)"
+                  (blur)="editingElementId.set(null)">{{ el.text }}</div>
+              } @else if (el.type === 'rect') {
+                <div class="spark-shape" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
+              } @else if (el.type === 'ellipse') {
+                <div class="spark-shape spark-shape-ellipse" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
+              } @else if (el.type === 'line') {
+                <svg class="spark-shape-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+                  <line x1="0" y1="5" x2="100" y2="5" [attr.stroke]="el.stroke" [attr.stroke-width]="el.strokeWidth"/>
+                </svg>
+              } @else if (el.type === 'arrow') {
+                <svg class="spark-shape-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+                  <defs>
+                    <marker [attr.id]="'arrow-' + el.id" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L6,3 L0,6 z" [attr.fill]="el.stroke"/>
+                    </marker>
+                  </defs>
+                  <line x1="0" y1="5" x2="92" y2="5" [attr.stroke]="el.stroke" [attr.stroke-width]="el.strokeWidth" [attr.marker-end]="'url(#arrow-' + el.id + ')'"/>
+                </svg>
+              } @else if (el.type === 'image') {
+                <img class="spark-shape-img" [src]="el.src" alt="" draggable="false">
+              }
+
+              <!-- Resize handles when selected -->
+              @if (selectedElementId() === el.id && editingElementId() !== el.id) {
+                <span class="spark-resize-handle nw" (pointerdown)="startElementResize($event, el.id, 'nw')"></span>
+                <span class="spark-resize-handle n"  (pointerdown)="startElementResize($event, el.id, 'n')"></span>
+                <span class="spark-resize-handle ne" (pointerdown)="startElementResize($event, el.id, 'ne')"></span>
+                <span class="spark-resize-handle e"  (pointerdown)="startElementResize($event, el.id, 'e')"></span>
+                <span class="spark-resize-handle se" (pointerdown)="startElementResize($event, el.id, 'se')"></span>
+                <span class="spark-resize-handle s"  (pointerdown)="startElementResize($event, el.id, 's')"></span>
+                <span class="spark-resize-handle sw" (pointerdown)="startElementResize($event, el.id, 'sw')"></span>
+                <span class="spark-resize-handle w"  (pointerdown)="startElementResize($event, el.id, 'w')"></span>
+              }
+            </div>
+          }
+
+          <div
+            #titleEl
+            class="spark-region spark-region-title"
+            [class.selected]="selectedRegion() === 'title'"
+            [class.empty]="!currentSlide().title.text"
+            [attr.data-placeholder]="'spark.placeholderTitle' | t"
+            [style.font-family]="currentSlide().title.fontFamily"
+            [style.font-size.px]="currentSlide().title.fontSize"
+            [style.font-weight]="currentSlide().title.bold ? 700 : 400"
+            [style.font-style]="currentSlide().title.italic ? 'italic' : 'normal'"
+            [style.text-decoration]="currentSlide().title.underline ? 'underline' : 'none'"
+            [style.color]="currentSlide().title.color"
+            [style.text-align]="currentSlide().title.align"
+            contenteditable="true"
+            spellcheck="false"
+            (focus)="selectRegion('title')"
+            (input)="updateRegionText('title', $any($event.target).innerText)"></div>
+
+          <div
+            #bodyEl
+            class="spark-region spark-region-body"
+            [class.selected]="selectedRegion() === 'body'"
+            [class.empty]="!currentSlide().body.text"
+            [attr.data-placeholder]="'spark.placeholderBody' | t"
+            [style.font-family]="currentSlide().body.fontFamily"
+            [style.font-size.px]="currentSlide().body.fontSize"
+            [style.font-weight]="currentSlide().body.bold ? 700 : 400"
+            [style.font-style]="currentSlide().body.italic ? 'italic' : 'normal'"
+            [style.text-decoration]="currentSlide().body.underline ? 'underline' : 'none'"
+            [style.color]="currentSlide().body.color"
+            [style.text-align]="currentSlide().body.align"
+            contenteditable="true"
+            spellcheck="false"
+            (focus)="selectRegion('body')"
+            (input)="updateRegionText('body', $any($event.target).innerText)"></div>
+        </div>
+
+        <!-- Footer counter -->
+        <div class="spark-canvas-footer">
+          <span>{{ currentIndex() + 1 }} / {{ doc().slides.length }}</span>
+          <span class="spark-shortcut-hint">F5 = {{ 'spark.present' | t }} · {{ 'spark.shortcutHint' | t }}</span>
+        </div>
+      </section>
+    </div>
+  } @else {
+    <!-- ===== Present mode ===== -->
+    <div class="spark-present-stage" (click)="nextSlide()">
+      <div class="spark-present-slide" [style.background]="currentSlide().background">
+        @for (el of slideElements(); track el.id) {
+          <div
+            class="spark-element spark-element-present"
+            [attr.data-type]="el.type"
+            [style.left.%]="el.x"
+            [style.top.%]="el.y"
+            [style.width.%]="el.w"
+            [style.height.%]="el.h"
+            [style.z-index]="100 + el.zIndex">
+            @if (el.type === 'text') {
+              <div class="spark-element-text"
+                [style.font-family]="el.fontFamily"
+                [style.font-size.px]="el.fontSize"
+                [style.font-weight]="el.bold ? 700 : 400"
+                [style.font-style]="el.italic ? 'italic' : 'normal'"
+                [style.text-decoration]="el.underline ? 'underline' : 'none'"
+                [style.color]="el.color"
+                [style.text-align]="el.align">{{ el.text }}</div>
+            } @else if (el.type === 'rect') {
+              <div class="spark-shape" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
+            } @else if (el.type === 'ellipse') {
+              <div class="spark-shape spark-shape-ellipse" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
+            } @else if (el.type === 'line') {
+              <svg class="spark-shape-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <line x1="0" y1="5" x2="100" y2="5" [attr.stroke]="el.stroke" [attr.stroke-width]="el.strokeWidth"/>
+              </svg>
+            } @else if (el.type === 'arrow') {
+              <svg class="spark-shape-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+                <defs>
+                  <marker [attr.id]="'p-arrow-' + el.id" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L6,3 L0,6 z" [attr.fill]="el.stroke"/>
+                  </marker>
+                </defs>
+                <line x1="0" y1="5" x2="92" y2="5" [attr.stroke]="el.stroke" [attr.stroke-width]="el.strokeWidth" [attr.marker-end]="'url(#p-arrow-' + el.id + ')'"/>
+              </svg>
+            } @else if (el.type === 'image') {
+              <img class="spark-shape-img" [src]="el.src" alt="" draggable="false">
+            }
+          </div>
+        }
+        <div
+          class="spark-region spark-region-title"
+          [style.font-family]="currentSlide().title.fontFamily"
+          [style.font-size.px]="currentSlide().title.fontSize"
+          [style.font-weight]="currentSlide().title.bold ? 700 : 400"
+          [style.font-style]="currentSlide().title.italic ? 'italic' : 'normal'"
+          [style.text-decoration]="currentSlide().title.underline ? 'underline' : 'none'"
+          [style.color]="currentSlide().title.color"
+          [style.text-align]="currentSlide().title.align"
+          [textContent]="currentSlide().title.text"></div>
+        <div
+          class="spark-region spark-region-body"
+          [style.font-family]="currentSlide().body.fontFamily"
+          [style.font-size.px]="currentSlide().body.fontSize"
+          [style.font-weight]="currentSlide().body.bold ? 700 : 400"
+          [style.font-style]="currentSlide().body.italic ? 'italic' : 'normal'"
+          [style.text-decoration]="currentSlide().body.underline ? 'underline' : 'none'"
+          [style.color]="currentSlide().body.color"
+          [style.text-align]="currentSlide().body.align"
+          [textContent]="currentSlide().body.text"></div>
+      </div>
+      <div class="spark-present-bar" (click)="$event.stopPropagation()">
+        <button type="button" class="spark-icon-btn" (click)="prevSlide()" [disabled]="currentIndex() === 0" aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <span class="spark-present-counter">{{ currentIndex() + 1 }} / {{ doc().slides.length }}</span>
+        <button type="button" class="spark-icon-btn" (click)="nextSlide()" [disabled]="currentIndex() === doc().slides.length - 1" aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button type="button" class="spark-icon-btn" (click)="exitPresent()" [attr.title]="'spark.exitPresent' | t" aria-label="Exit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+      </div>
+    </div>
+  }
+</div>

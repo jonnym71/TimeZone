@@ -1,0 +1,236 @@
+<div class="compute-page" [class.open]="overlay.computeOpen()" role="dialog" aria-label="COMPUTE">
+  <!-- Top Bar -->
+  <header class="compute-topbar">
+    <button class="spark-back" type="button" (click)="close()">
+      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
+    </button>
+    <div class="spark-brand compute-brand">
+      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="5" y="3" width="22" height="26" rx="3" fill="none" stroke="#D26B2F" stroke-width="2"/>
+        <rect x="9" y="7" width="14" height="5" rx="0.8" fill="none" stroke="#D26B2F" stroke-width="1.5"/>
+        <circle cx="11.5" cy="17" r="1" fill="#D26B2F"/>
+        <circle cx="16" cy="17" r="1" fill="#D26B2F"/>
+        <circle cx="20.5" cy="17" r="1" fill="#D26B2F"/>
+        <circle cx="11.5" cy="21" r="1" fill="#D26B2F"/>
+        <circle cx="16" cy="21" r="1" fill="#D26B2F"/>
+        <circle cx="20.5" cy="21" r="1" fill="#D26B2F"/>
+        <circle cx="11.5" cy="25" r="1" fill="#D26B2F"/>
+        <circle cx="16" cy="25" r="1" fill="#D26B2F"/>
+        <circle cx="20.5" cy="25" r="1" fill="#D26B2F"/>
+      </svg>
+      <span>COMPUTE</span>
+    </div>
+    <div class="compute-tabs">
+      <button type="button" [class.active]="activeTab() === 'calc'" (click)="setTab('calc')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><rect x="7" y="6" width="10" height="3" rx="0.6"/><circle cx="9" cy="14" r="0.8" fill="currentColor"/><circle cx="12" cy="14" r="0.8" fill="currentColor"/><circle cx="15" cy="14" r="0.8" fill="currentColor"/></svg>
+        {{ 'compute.tab.calc' | t }}
+      </button>
+      <button type="button" [class.active]="activeTab() === 'plot'" (click)="setTab('plot')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M4 16c2-4 4-6 8-6s6 2 8-2"/></svg>
+        {{ 'compute.tab.plot' | t }}
+      </button>
+    </div>
+    <div class="spark-actions">
+      <div class="compute-mode-toggle">
+        <button type="button" [class.active]="mode() === 'rad'" (click)="setMode('rad')">RAD</button>
+        <button type="button" [class.active]="mode() === 'deg'" (click)="setMode('deg')">DEG</button>
+      </div>
+      <button type="button" class="spark-icon-btn" (click)="clearAll()" [attr.title]="'compute.clearAll' | t" aria-label="Clear all">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="compute-main" [class.plot-mode]="activeTab() === 'plot'">
+    @if (activeTab() === 'calc') {
+    <!-- Calculator -->
+    <section class="compute-calc">
+      <div class="compute-display">
+        <div class="compute-expression" aria-label="Expression">
+          {{ expression() || '0' }}
+        </div>
+        <div class="compute-preview" [class.error]="!liveResult().ok && !!expression()">
+          @if (liveResult().formatted) {
+            <span class="compute-eq">=</span> <span>{{ liveResult().formatted }}</span>
+          } @else if (liveResult().error) {
+            <span class="compute-error-msg">{{ liveResult().error }}</span>
+          } @else {
+            <span class="compute-placeholder">…</span>
+          }
+        </div>
+      </div>
+
+      <!-- Top row: functions -->
+      <div class="compute-keys compute-keys-fn">
+        <button type="button" (click)="press('sin(')">sin</button>
+        <button type="button" (click)="press('cos(')">cos</button>
+        <button type="button" (click)="press('tan(')">tan</button>
+        <button type="button" (click)="press('ln(')">ln</button>
+        <button type="button" (click)="press('log(')">log</button>
+        <button type="button" (click)="press('asin(')">sin⁻¹</button>
+        <button type="button" (click)="press('acos(')">cos⁻¹</button>
+        <button type="button" (click)="press('atan(')">tan⁻¹</button>
+        <button type="button" (click)="press('sqrt(')">√</button>
+        <button type="button" (click)="press('^')">x<sup>y</sup></button>
+        <button type="button" (click)="press('pi')">π</button>
+        <button type="button" (click)="press('e')">e</button>
+        <button type="button" (click)="press('!')">x!</button>
+        <button type="button" (click)="press('abs(')">|x|</button>
+        <button type="button" (click)="press('%')">%</button>
+      </div>
+
+      <!-- Main grid -->
+      <div class="compute-keys compute-keys-main">
+        <button type="button" class="compute-key-fn" (click)="press('(')">(</button>
+        <button type="button" class="compute-key-fn" (click)="press(')')">)</button>
+        <button type="button" class="compute-key-fn" (click)="backspace()" [attr.aria-label]="'compute.backspace' | t">⌫</button>
+        <button type="button" class="compute-key-fn compute-key-clear" (click)="clear()">C</button>
+
+        <button type="button" (click)="press('7')">7</button>
+        <button type="button" (click)="press('8')">8</button>
+        <button type="button" (click)="press('9')">9</button>
+        <button type="button" class="compute-key-op" (click)="press('/')">÷</button>
+
+        <button type="button" (click)="press('4')">4</button>
+        <button type="button" (click)="press('5')">5</button>
+        <button type="button" (click)="press('6')">6</button>
+        <button type="button" class="compute-key-op" (click)="press('*')">×</button>
+
+        <button type="button" (click)="press('1')">1</button>
+        <button type="button" (click)="press('2')">2</button>
+        <button type="button" (click)="press('3')">3</button>
+        <button type="button" class="compute-key-op" (click)="press('-')">−</button>
+
+        <button type="button" class="compute-key-fn" (click)="toggleSign()" [attr.aria-label]="'compute.toggleSign' | t">±</button>
+        <button type="button" (click)="press('0')">0</button>
+        <button type="button" (click)="press('.')">.</button>
+        <button type="button" class="compute-key-op" (click)="press('+')">+</button>
+
+        <button type="button" class="compute-key-equals" (click)="evaluate()">=</button>
+      </div>
+
+      <p class="compute-hint">{{ 'compute.hint' | t }}</p>
+    </section>
+    } @else {
+    <!-- Function Plotter -->
+    <section class="compute-plot">
+      <div class="plot-toolbar">
+        <input
+          class="plot-input"
+          type="text"
+          [ngModel]="newPlotExpr()"
+          (ngModelChange)="newPlotExpr.set($event)"
+          (keydown.enter)="addPlot()"
+          [attr.placeholder]="'compute.plot.placeholder' | t">
+        <button type="button" class="plot-add-btn" (click)="addPlot()" [disabled]="!newPlotExpr().trim()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          {{ 'compute.plot.add' | t }}
+        </button>
+      </div>
+
+      <div class="plot-canvas-wrap">
+        <canvas #plotCanvas (mousemove)="onPlotHover($event)" (mouseleave)="onPlotLeave()"></canvas>
+        <div class="plot-zoom-controls">
+          <button type="button" class="spark-icon-btn" (click)="zoomIn()" [attr.title]="'compute.plot.zoomIn' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6M11 8v6"/></svg></button>
+          <button type="button" class="spark-icon-btn" (click)="zoomOut()" [attr.title]="'compute.plot.zoomOut' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6"/></svg></button>
+          <button type="button" class="spark-icon-btn" (click)="resetView()" [attr.title]="'compute.plot.reset' | t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+        </div>
+      </div>
+
+      <div class="plot-panels">
+        <div class="plot-panel">
+          <header><h3>{{ 'compute.plot.functions' | t }}</h3><span class="compute-count">{{ plots().length }}</span></header>
+          <div class="plot-panel-body">
+            @if (plots().length === 0) {
+              <p class="compute-empty" [innerHTML]="'compute.plot.empty' | t"></p>
+            } @else {
+              <ul class="plot-function-list">
+                @for (p of plots(); track p.id) {
+                  <li class="plot-function-item" [class.hidden-plot]="!p.visible">
+                    <label class="plot-color-label">
+                      <span class="plot-color-dot" [style.background]="p.color"></span>
+                      <input type="color" [value]="p.color" (input)="setPlotColor(p.id, $any($event.target).value)" aria-label="Color">
+                    </label>
+                    <code class="plot-expr">f(x) = {{ p.expr }}</code>
+                    <button type="button" class="spark-icon-btn spark-icon-btn-xs" (click)="togglePlot(p.id)" [attr.title]="p.visible ? ('compute.plot.hide' | t) : ('compute.plot.show' | t)">
+                      @if (p.visible) { 👁 } @else { ⊘ }
+                    </button>
+                    <button type="button" class="spark-icon-btn spark-icon-btn-xs spark-icon-btn-danger" (click)="removePlot(p.id)" [attr.aria-label]="'spark.delete' | t">×</button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="plot-panel">
+          <header><h3>{{ 'compute.plot.range' | t }}</h3></header>
+          <div class="plot-panel-body plot-range-body">
+            <label>x:
+              <input type="number" step="any" [value]="plotState().xMin" (change)="setXRange(+$any($event.target).value, plotState().xMax)">
+              <span>—</span>
+              <input type="number" step="any" [value]="plotState().xMax" (change)="setXRange(plotState().xMin, +$any($event.target).value)">
+            </label>
+            <label>y:
+              <input type="number" step="any" [value]="plotState().yMin" (change)="setYRange(+$any($event.target).value, plotState().yMax)" [disabled]="plotState().yAuto">
+              <span>—</span>
+              <input type="number" step="any" [value]="plotState().yMax" (change)="setYRange(plotState().yMin, +$any($event.target).value)" [disabled]="plotState().yAuto">
+            </label>
+            <label class="plot-auto-check">
+              <input type="checkbox" [checked]="plotState().yAuto" (change)="toggleYAuto()"> {{ 'compute.plot.yAuto' | t }}
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- Sidebar: history + vars -->
+    <aside class="compute-sidebar">
+      <div class="compute-panel">
+        <header><h3>{{ 'compute.history' | t }}</h3><span class="compute-count">{{ history().length }}</span></header>
+        <div class="compute-panel-body">
+          @if (history().length === 0) {
+            <p class="compute-empty">{{ 'compute.historyEmpty' | t }}</p>
+          } @else {
+            <ul class="compute-history-list">
+              @for (h of history(); track $index) {
+                <li class="compute-history-item" [class.error]="!h.ok">
+                  <button type="button" class="compute-history-input" (click)="reuseHistory(h)" [attr.title]="'compute.reuse' | t">{{ h.input }}</button>
+                  <div class="compute-history-result">
+                    <span class="compute-eq">=</span>
+                    @if (h.ok) {
+                      <button type="button" class="compute-history-value" (click)="insertHistoryResult(h)" [attr.title]="'compute.insertResult' | t">{{ h.result }}</button>
+                    } @else {
+                      <span class="compute-history-err">{{ h.result }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <div class="compute-panel">
+        <header><h3>{{ 'compute.variables' | t }}</h3><span class="compute-count">{{ varList().length }}</span></header>
+        <div class="compute-panel-body">
+          @if (varList().length === 0) {
+            <p class="compute-empty" [innerHTML]="'compute.varsEmpty' | t"></p>
+          } @else {
+            <ul class="compute-var-list">
+              @for (v of varList(); track v.name) {
+                <li class="compute-var-item">
+                  <button type="button" class="compute-var-name" (click)="insertVar(v.name)" [attr.title]="'compute.insertVar' | t">{{ v.name }}</button>
+                  <span class="compute-var-eq">=</span>
+                  <span class="compute-var-value">{{ v.value }}</span>
+                  <button type="button" class="compute-var-del" (click)="deleteVar(v.name)" [attr.aria-label]="'compute.deleteVar' | t">×</button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>

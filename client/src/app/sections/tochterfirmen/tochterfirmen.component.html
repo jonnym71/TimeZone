@@ -14,12 +14,15 @@
 
     <div class="sub-grid">
       @for (sub of subsidiaries(); track sub.title) {
-        <div class="sub-card">
+        <div class="sub-card" [class.locked]="!hasAccess(sub)">
+          @if (!hasAccess(sub)) {
+            <span class="sub-lock" aria-hidden="true">🔒</span>
+          }
           <div class="sub-icon">{{ sub.icon }}</div>
           <div class="sub-subtitle">{{ subtitleOf(sub) }}</div>
           <h3>{{ sub.title }}</h3>
           <p>{{ descriptionOf(sub) }}</p>
-          <a href="#" class="sub-link" (click)="cardClick(sub.action, $event)">{{ linkTextOf(sub) }}</a>
+          <a href="#" class="sub-link" (click)="cardClick(sub, $event)">{{ linkTextOf(sub) }}</a>
         </div>
       }
     </div>

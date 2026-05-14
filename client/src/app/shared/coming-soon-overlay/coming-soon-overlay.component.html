@@ -33,14 +33,69 @@
   </div>
 
   <div class="cs-mode cs-mode-rank-required">
-    <div class="rank-lock" aria-hidden="true">🔒</div>
-    <div class="rank-required-text">{{ 'cs.rankRequired' | t }}</div>
-    @if (requiredRank(); as r) {
-      <div class="rank-required-badge" [style.--rank-color]="r.color">
-        <span class="rank-dot" [style.background]="r.color"></span>
-        <span class="rank-name">{{ r.key }}</span>
+    @if (buyStep() === 'idle') {
+      <div class="rank-lock" aria-hidden="true">🔒</div>
+      <div class="rank-required-text">{{ 'cs.rankRequired' | t }}</div>
+      @if (requiredRank(); as r) {
+        <button class="rank-required-badge rank-buy-btn" type="button" [style.--rank-color]="r.color" (click)="startBuyRank()">
+          <span class="rank-dot" [style.background]="r.color"></span>
+          <span class="rank-name">{{ r.key }}</span>
+          <span class="rank-buy-hint">{{ r.price }}</span>
+        </button>
+      }
+    }
+    @if (buyStep() === 'confirm' && requiredRank(); as r) {
+      <div class="rank-buy-panel">
+        <div class="rank-buy-icon" [style.background]="r.color"></div>
+        <h3 class="rank-buy-title">{{ r.key }}</h3>
+        <p class="rank-buy-price">{{ r.price }}</p>
+        <ul class="rank-buy-perks">
+          @for (p of r.perks; track p) {
+            <li>{{ p }}</li>
+          }
+        </ul>
+        <p class="rank-buy-balance">Aktuelles Guthaben: <strong>{{ formatPrice(auth.user()?.credit ?? 0) }}</strong></p>
+        <div class="rank-buy-actions">
+          <button type="button" class="btn btn-outline" (click)="cancelBuyRank()">Abbrechen</button>
+          <button type="button" class="btn btn-primary" (click)="confirmBuyRank()">Kaufen</button>
+        </div>
       </div>
     }
+    @if (buyStep() === 'no-login') {
+      <div class="rank-buy-panel">
+        <div class="rank-lock" aria-hidden="true">🔐</div>
+        <h3 class="rank-buy-title">Bitte zuerst anmelden</h3>
+        <div class="rank-buy-actions">
+          <button type="button" class="btn btn-outline" (click)="cancelBuyRank()">Zurück</button>
+        </div>
+      </div>
+    }
+    @if (buyStep() === 'no-credit' && requiredRank(); as r) {
+      <div class="rank-buy-panel">
+        <div class="rank-lock" aria-hidden="true">💸</div>
+        <h3 class="rank-buy-title">Nicht genug Guthaben</h3>
+        <p class="rank-buy-price">Du brauchst <strong>{{ r.price }}</strong></p>
+        <p class="rank-buy-balance">Aktuelles Guthaben: <strong>{{ formatPrice(auth.user()?.credit ?? 0) }}</strong></p>
+        <div class="rank-buy-actions">
+          <button type="button" class="btn btn-outline" (click)="cancelBuyRank()">Zurück</button>
+        </div>
+      </div>
+    }
+    @if (buyStep() === 'success' && requiredRank(); as r) {
+      <div class="rank-buy-panel rank-buy-success">
+        <div class="rank-buy-check" aria-hidden="true">✓</div>
+        <h3 class="rank-buy-title">Glückwunsch!</h3>
+        <p class="rank-buy-line">Du bist jetzt <strong [style.color]="r.color">{{ r.key }}</strong>.</p>
+        <div class="rank-buy-actions">
+          <button type="button" class="btn btn-primary" (click)="finishBuy()">Schließen</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="cs-mode cs-mode-admin-only">
+    <div class="rank-lock" aria-hidden="true">🛡️</div>
+    <div class="rank-required-text">{{ 'cs.adminOnly' | t }}</div>
   </div>
 
   <div class="cs-mode cs-mode-login">
