@@ -4,7 +4,7 @@ import fs from 'fs';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
-const PUBLIC_DIR = path.resolve(__dirname, '..', '..');
+const PUBLIC_DIR = path.resolve(__dirname, '..', '..', 'client', 'dist', 'client', 'browser');
 const DATA_DIR = path.resolve(__dirname, '..', 'data');
 const GIFTS_FILE = path.join(DATA_DIR, 'gifts.json');
 
