@@ -1,5 +1,7 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService, NAME_COOLDOWN_MS, buildInternalEmail } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
@@ -43,11 +45,42 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 @Component({
   selector: 'app-inbox-page',
   standalone: true,
-  imports: [FormsModule, TranslatePipe],
+  imports: [FormsModule, NgTemplateOutlet, TranslatePipe],
   templateUrl: './inbox-page.component.html',
 })
 export class InboxPageComponent {
   readonly overlay = inject(OverlayService);
+  private auth = inject(AuthService);
+  readonly myInternalEmail = this.auth.internalEmail;
+  readonly currentUser = this.auth.user;
+
+  // === Email-Verwaltung in Privon ===
+  readonly emailEditOpen = signal(false);
+  readonly desiredLocal = signal('');     // gewünschter local-part vor @timezone.com
+  readonly emailEditMsg = signal<{ kind: 'error' | 'ok'; text: string } | null>(null);
+
+  readonly previewEmail = computed(() => {
+    const local = this.desiredLocal().trim();
+    return local ? buildInternalEmail(local) : '';
+  });
+
+  readonly desiredTaken = computed(() => {
+    const local = this.desiredLocal().trim();
+    const u = this.currentUser();
+    if (!local || !u) return false;
+    if (local === u.username) return false;
+    return this.auth.isInternalEmailTakenForOther(local, u.email);
+  });
+
+  readonly cooldownRemaining = computed(() => {
+    const u = this.currentUser();
+    if (!u?.nameLastChanged) return 0;
+    const remaining = NAME_COOLDOWN_MS - (Date.now() - u.nameLastChanged);
+    return remaining > 0 ? remaining : 0;
+  });
+
+  readonly cooldownText = signal('');
+  private cooldownTimer: number | null = null;
 
   readonly contacts = signal<Contact[]>([]);
   readonly drafts = signal<Draft[]>([]);
@@ -63,11 +96,53 @@ export class InboxPageComponent {
   readonly attachments = signal<Attachment[]>([]);
   readonly activeDraftId = signal<string | null>(null);
 
-  readonly currentFolder = signal<'compose' | 'drafts' | 'sent'>('compose');
+  readonly currentFolder = signal<'eingang' | 'entwurfe' | 'spam' | 'versendet' | 'compose'>('eingang');
+  readonly searchQuery = signal('');
 
   // Contact form
   readonly contactName = signal('');
   readonly contactEmail = signal('');
+
+  // Storage estimate (UTF-16 bytes for current inbox data)
+  readonly storageUsedBytes = computed(() => {
+    const json = JSON.stringify({
+      contacts: this.contacts(),
+      drafts: this.drafts(),
+      sent: this.sent(),
+    });
+    return json.length * 2;
+  });
+
+  readonly storageQuotaBytes = 5 * 1024 * 1024; // ~5 MB localStorage typical
+
+  readonly storagePercent = computed(() => {
+    return Math.min(100, (this.storageUsedBytes() / this.storageQuotaBytes) * 100);
+  });
+
+  // Filtered lists by search
+  readonly filteredDrafts = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const arr = this.drafts();
+    if (!q) return arr;
+    return arr.filter(d =>
+      d.subject.toLowerCase().includes(q) ||
+      d.recipientName.toLowerCase().includes(q) ||
+      d.recipientEmail.toLowerCase().includes(q) ||
+      d.body.toLowerCase().includes(q),
+    );
+  });
+
+  readonly filteredSent = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const arr = this.sent();
+    if (!q) return arr;
+    return arr.filter(d =>
+      d.subject.toLowerCase().includes(q) ||
+      d.recipientName.toLowerCase().includes(q) ||
+      d.recipientEmail.toLowerCase().includes(q) ||
+      d.body.toLowerCase().includes(q),
+    );
+  });
 
   readonly emailValid = computed(() => EMAIL_RE.test(this.recipientEmail().trim()));
   readonly canSend = computed(() => this.emailValid() && !!this.subject().trim() && !!this.body().trim());
@@ -114,7 +189,7 @@ export class InboxPageComponent {
   }
 
   /* ===== Folder switching ===== */
-  setFolder(f: 'compose' | 'drafts' | 'sent'): void {
+  setFolder(f: 'eingang' | 'entwurfe' | 'spam' | 'versendet' | 'compose'): void {
     this.currentFolder.set(f);
   }
 
@@ -313,6 +388,65 @@ export class InboxPageComponent {
   }
 
   close(): void { this.overlay.closeInbox(); }
+
+  /* ===== Email-Verwaltung in Privon ===== */
+  openEmailEdit(): void {
+    const u = this.currentUser();
+    if (!u) return;
+    this.desiredLocal.set(u.username);
+    this.emailEditMsg.set(null);
+    this.emailEditOpen.set(true);
+    this.startCooldownTick();
+  }
+
+  closeEmailEdit(): void {
+    this.emailEditOpen.set(false);
+    this.emailEditMsg.set(null);
+    this.stopCooldownTick();
+  }
+
+  saveDesiredEmail(): void {
+    const local = this.desiredLocal().trim();
+    if (!local) return;
+    if (this.desiredTaken()) {
+      this.emailEditMsg.set({ kind: 'error', text: 'taken' });
+      return;
+    }
+    if (this.cooldownRemaining() > 0) {
+      this.emailEditMsg.set({ kind: 'error', text: 'cooldown' });
+      return;
+    }
+    const ok = this.auth.changeName(local);
+    if (ok) {
+      this.emailEditMsg.set({ kind: 'ok', text: 'saved' });
+      this.emailEditOpen.set(false);
+    } else {
+      this.emailEditMsg.set({ kind: 'error', text: 'failed' });
+    }
+  }
+
+  private startCooldownTick(): void {
+    this.stopCooldownTick();
+    const tick = (): void => {
+      const remaining = this.cooldownRemaining();
+      if (remaining <= 0) { this.cooldownText.set(''); this.stopCooldownTick(); return; }
+      const h = Math.floor(remaining / 3600000);
+      const m = Math.floor((remaining % 3600000) / 60000);
+      const s = Math.floor((remaining % 60000) / 1000);
+      this.cooldownText.set(`${h}h ${m}m ${s}s`);
+    };
+    tick();
+    if (this.cooldownRemaining() > 0) {
+      this.cooldownTimer = window.setInterval(tick, 1000) as unknown as number;
+    }
+  }
+
+  private stopCooldownTick(): void {
+    if (this.cooldownTimer !== null) {
+      clearInterval(this.cooldownTimer);
+      this.cooldownTimer = null;
+    }
+  }
 
   @HostListener('document:keydown', ['$event'])
   onKey(event: KeyboardEvent): void {

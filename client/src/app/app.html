@@ -1,3 +1,10 @@
+@if (disclaimerVisible()) {
+  <div class="site-disclaimer" role="note">
+    <span class="site-disclaimer-icon" aria-hidden="true">ⓘ</span>
+    <span class="site-disclaimer-text">{{ 'disclaimer.fictional' | t }}</span>
+    <button type="button" class="site-disclaimer-close" (click)="dismissDisclaimer()" [attr.aria-label]="'common.close' | t">×</button>
+  </div>
+}
 <app-navbar></app-navbar>
 <router-outlet></router-outlet>
 <app-footer></app-footer>

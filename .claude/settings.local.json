@@ -16,7 +16,8 @@
       "Bash(curl -s -o /dev/null -w \"GET /impressum -> %{http_code}\\\\n\" http://localhost:4201/impressum)",
       "Bash(curl -s -o /dev/null -w \"GET /datenschutz -> %{http_code}\\\\n\" http://localhost:4201/datenschutz)",
       "Bash(curl -s -o /dev/null -w \"GET /bildquellen -> %{http_code}\\\\n\" http://localhost:4201/bildquellen)",
-      "Bash(curl -s -o /dev/null -w \"GET /xyz -> %{http_code}\\\\n\" http://localhost:4201/xyz)"
+      "Bash(curl -s -o /dev/null -w \"GET /xyz -> %{http_code}\\\\n\" http://localhost:4201/xyz)",
+      "Bash(npx ng *)"
     ]
   }
 }

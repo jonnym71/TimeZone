@@ -1,58 +1,102 @@
 <div class="inbox-page" [class.open]="overlay.inboxOpen()" role="dialog" aria-label="INBOX">
+  <!-- ===== Top bar (now slim, only search + saved) ===== -->
   <header class="inbox-topbar">
-    <button class="spark-back" type="button" (click)="close()">
-      <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
-    </button>
-    <div class="spark-brand inbox-brand">
-      <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-        <rect x="3" y="6" width="26" height="20" rx="3" fill="none" stroke="#FFB45A" stroke-width="2"/>
-        <path d="M3 8l13 9 13-9" fill="none" stroke="#FFB45A" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      <span>INBOX</span>
+    <div class="inbox-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        [attr.placeholder]="'inbox.search' | t">
     </div>
-    <div class="spark-actions">
-      <span class="document-save-hint" [class.visible]="!!savedHint()">{{ savedHint() === '→' ? ('inbox.sentMsg' | t) : ('inbox.savedDraft' | t) }}</span>
-      <button type="button" class="inbox-compose-btn" (click)="newCompose()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        {{ 'inbox.newMessage' | t }}
-      </button>
-    </div>
+
+    <span class="inbox-saved-pill" [class.visible]="!!savedHint()">{{ savedHint() === '→' ? ('inbox.sentMsg' | t) : ('inbox.savedDraft' | t) }}</span>
   </header>
 
   <div class="inbox-main">
-    <!-- Sidebar: folders + contacts -->
+    <!-- ===== Sidebar (brand + back moved here) ===== -->
     <aside class="inbox-sidebar">
-      <nav class="inbox-folders">
-        <button type="button" [class.active]="currentFolder() === 'compose'" (click)="setFolder('compose')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4v16h16v-7"/><path d="M18.5 2.5l3 3L12 15l-4 1 1-4z"/></svg>
-          <span>{{ 'inbox.folder.compose' | t }}</span>
+      <div class="inbox-sidebar-head">
+        <div class="inbox-brand">
+          <svg class="inbox-logo" viewBox="0 0 32 32" aria-hidden="true">
+            <defs>
+              <linearGradient id="privonGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7c5fff"/>
+                <stop offset="50%" stop-color="#6b80ff"/>
+                <stop offset="100%" stop-color="#5db4ff"/>
+              </linearGradient>
+            </defs>
+            <rect x="3" y="8" width="26" height="17" rx="4" fill="none" stroke="url(#privonGrad)" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M3 10 L16 20 L29 10" fill="none" stroke="url(#privonGrad)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          <span>privon</span>
+        </div>
+        <button class="inbox-back" type="button" (click)="close()" [attr.aria-label]="'common.back' | t" [attr.title]="'common.back' | t">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         </button>
-        <button type="button" [class.active]="currentFolder() === 'drafts'" (click)="setFolder('drafts')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8z"/><path d="M14 3v5h5"/></svg>
-          <span>{{ 'inbox.folder.drafts' | t }}</span>
-          @if (drafts().length > 0) { <span class="inbox-folder-count">{{ drafts().length }}</span> }
-        </button>
-        <button type="button" [class.active]="currentFolder() === 'sent'" (click)="setFolder('sent')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-7 18-3-7z"/></svg>
-          <span>{{ 'inbox.folder.sent' | t }}</span>
-          @if (sent().length > 0) { <span class="inbox-folder-count">{{ sent().length }}</span> }
-        </button>
-      </nav>
+      </div>
 
-      <div class="inbox-contacts">
-        <header><h3>{{ 'inbox.contacts' | t }}</h3><span class="compute-count">{{ contacts().length }}</span></header>
+      <button class="inbox-compose-btn" type="button" (click)="newCompose()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        {{ 'inbox.newMessage' | t }}
+      </button>
+
+      <!-- Übersicht: enthält die 4 Folder -->
+      <section class="inbox-section">
+        <h3 class="inbox-section-head">{{ 'inbox.overview' | t }}</h3>
+        <nav class="inbox-folders" aria-label="Folders">
+          <button type="button" [class.active]="currentFolder() === 'eingang'" (click)="setFolder('eingang')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            </svg>
+            <span>{{ 'inbox.folder.eingang' | t }}</span>
+          </button>
+          <button type="button" [class.active]="currentFolder() === 'entwurfe'" (click)="setFolder('entwurfe')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3H5v18h14V8z"/>
+              <path d="M14 3v5h5"/>
+              <path d="M9 13h6M9 17h4"/>
+            </svg>
+            <span>{{ 'inbox.folder.entwurfe' | t }}</span>
+            @if (drafts().length > 0) { <span class="inbox-folder-count">{{ drafts().length }}</span> }
+          </button>
+          <button type="button" [class.active]="currentFolder() === 'spam'" (click)="setFolder('spam')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M5.6 5.6l12.8 12.8"/>
+            </svg>
+            <span>{{ 'inbox.folder.spam' | t }}</span>
+          </button>
+          <button type="button" [class.active]="currentFolder() === 'versendet'" (click)="setFolder('versendet')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 11l18-8-7 18-3-7z"/>
+            </svg>
+            <span>{{ 'inbox.folder.versendet' | t }}</span>
+            @if (sent().length > 0) { <span class="inbox-folder-count">{{ sent().length }}</span> }
+          </button>
+        </nav>
+      </section>
+
+      <!-- Kontakte (always visible) -->
+      <section class="inbox-section inbox-section-grow">
+        <h3 class="inbox-section-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <span>{{ 'inbox.contacts' | t }}</span>
+          @if (contacts().length > 0) { <span class="inbox-folder-count">{{ contacts().length }}</span> }
+        </h3>
         <div class="inbox-contact-add">
           <input type="text" [ngModel]="contactName()" (ngModelChange)="contactName.set($event)" [attr.placeholder]="'inbox.contact.name' | t">
           <input type="email" [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)" [attr.placeholder]="'inbox.contact.email' | t" (keydown.enter)="addContact()">
-          <button type="button" (click)="addContact()" [disabled]="!contactEmail().trim()">+</button>
+          <button type="button" (click)="addContact()" [disabled]="!contactEmail().trim()" aria-label="Add">+</button>
         </div>
         @if (contacts().length === 0) {
-          <p class="compute-empty">{{ 'inbox.contacts.empty' | t }}</p>
+          <p class="inbox-muted">{{ 'inbox.contacts.empty' | t }}</p>
         } @else {
           <ul class="inbox-contact-list">
             @for (c of contacts(); track c.id) {
               <li class="inbox-contact-item">
-                <button type="button" class="inbox-contact-pick" (click)="pickContact(c)">
+                <button type="button" class="inbox-contact-pick" (click)="pickContact(c); setFolder('compose')">
                   <strong>{{ c.name || c.email }}</strong>
                   @if (c.name) { <span class="inbox-contact-email">{{ c.email }}</span> }
                 </button>
@@ -61,14 +105,64 @@
             }
           </ul>
         }
-      </div>
+      </section>
+
+      <!-- Aktuelle TIME-ZONE-Email + Verwaltung (unten) -->
+      @if (myInternalEmail()) {
+        <div class="inbox-self-email">
+          <div class="inbox-self-email-head">
+            <span class="inbox-self-email-label">{{ 'inbox.myAddress' | t }}</span>
+            @if (!emailEditOpen()) {
+              <button type="button" class="inbox-self-email-manage" (click)="openEmailEdit()">{{ 'inbox.manageEmail' | t }}</button>
+            } @else {
+              <button type="button" class="inbox-self-email-manage" (click)="closeEmailEdit()">{{ 'common.cancel' | t }}</button>
+            }
+          </div>
+          <code class="inbox-self-email-value">{{ myInternalEmail() }}</code>
+
+          @if (emailEditOpen()) {
+            <form class="inbox-email-edit" (submit)="$event.preventDefault(); saveDesiredEmail()" autocomplete="off">
+              <label class="inbox-email-edit-label">{{ 'inbox.desiredEmail' | t }}</label>
+              <div class="inbox-email-edit-row" [class.taken]="desiredTaken()">
+                <input
+                  type="text"
+                  class="inbox-email-edit-input"
+                  maxlength="32"
+                  [ngModel]="desiredLocal()"
+                  (ngModelChange)="desiredLocal.set($event)"
+                  name="desiredLocal"
+                  [placeholder]="'inbox.desiredEmail.placeholder' | t">
+                <span class="inbox-email-edit-domain">{{ '@timezone.com' }}</span>
+              </div>
+              @if (previewEmail()) {
+                <p class="inbox-email-edit-preview" [class.taken]="desiredTaken()">
+                  <code>{{ previewEmail() }}</code>
+                  @if (desiredTaken()) {
+                    <span class="inbox-email-edit-warn">⚠ {{ 'profile.nameTaken' | t }}</span>
+                  }
+                </p>
+              }
+              @if (cooldownRemaining() > 0) {
+                <p class="inbox-email-edit-cooldown">⏰ {{ 'profile.cooldownText' | t }} <strong>{{ cooldownText() }}</strong></p>
+              }
+              <button
+                type="submit"
+                class="inbox-email-edit-save"
+                [disabled]="desiredTaken() || !desiredLocal().trim() || cooldownRemaining() > 0 || desiredLocal().trim() === currentUser()?.username">
+                {{ 'common.save' | t }}
+              </button>
+            </form>
+          }
+        </div>
+      }
+
     </aside>
 
-    <!-- Main area: compose / list -->
+    <!-- ===== Main content ===== -->
     <section class="inbox-content">
       @if (currentFolder() === 'compose') {
         <form class="inbox-compose" (submit)="$event.preventDefault(); send()" autocomplete="off">
-          <h2 class="inbox-compose-title">{{ 'inbox.compose.title' | t }}</h2>
+          <h2 class="inbox-content-title">{{ 'inbox.compose.title' | t }}</h2>
 
           <div class="inbox-field">
             <label>{{ 'inbox.field.toName' | t }}</label>
@@ -84,11 +178,11 @@
           <div class="inbox-field-row">
             <div class="inbox-field">
               <label>CC</label>
-              <input type="text" [ngModel]="cc()" (ngModelChange)="cc.set($event)" name="cc" placeholder="email1, email2">
+              <input type="text" [ngModel]="cc()" (ngModelChange)="cc.set($event)" name="cc" placeholder="">
             </div>
             <div class="inbox-field">
               <label>BCC</label>
-              <input type="text" [ngModel]="bcc()" (ngModelChange)="bcc.set($event)" name="bcc" placeholder="email1, email2">
+              <input type="text" [ngModel]="bcc()" (ngModelChange)="bcc.set($event)" name="bcc" placeholder="">
             </div>
           </div>
           <div class="inbox-field">
@@ -103,9 +197,7 @@
           <div class="inbox-attachments">
             <div class="inbox-attachments-head">
               <label class="inbox-attach-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 12.5l-9 9a5.5 5.5 0 0 1-7.8-7.8l9-9a3.5 3.5 0 0 1 5 5l-9 9a1.5 1.5 0 0 1-2.1-2.1l8-8"/>
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-9 9a5.5 5.5 0 0 1-7.8-7.8l9-9a3.5 3.5 0 0 1 5 5l-9 9a1.5 1.5 0 0 1-2.1-2.1l8-8"/></svg>
                 <span>{{ 'inbox.attach' | t }}</span>
                 <input type="file" multiple (change)="onFilesSelected($any($event.target))" hidden>
               </label>
@@ -137,59 +229,123 @@
             <span class="inbox-send-hint">{{ 'inbox.sendHint' | t }}</span>
           </div>
         </form>
-      } @else if (currentFolder() === 'drafts') {
-        <div class="inbox-list-view">
-          <h2 class="inbox-list-title">{{ 'inbox.folder.drafts' | t }}</h2>
+      } @else if (currentFolder() === 'entwurfe') {
+        <header class="inbox-list-head">
+          <h2 class="inbox-content-title">{{ 'inbox.folder.entwurfe' | t }}</h2>
+          <span class="inbox-list-count">{{ filteredDrafts().length }}</span>
+        </header>
+        @if (filteredDrafts().length === 0) {
           @if (drafts().length === 0) {
-            <p class="compute-empty">{{ 'inbox.drafts.empty' | t }}</p>
+            <ng-container *ngTemplateOutlet="emptyState; context: { $implicit: 'entwurfe' }"></ng-container>
           } @else {
-            <ul class="inbox-mail-list">
-              @for (d of drafts(); track d.id) {
-                <li class="inbox-mail-item" (click)="loadDraft(d)">
-                  <div class="inbox-mail-row">
-                    <strong class="inbox-mail-to">{{ d.recipientName || d.recipientEmail || ('inbox.noRecipient' | t) }}</strong>
-                    <span class="inbox-mail-date">{{ formatDate(d.updatedAt) }}</span>
-                  </div>
-                  <div class="inbox-mail-row">
-                    <span class="inbox-mail-subject">{{ d.subject || ('inbox.noSubject' | t) }}</span>
-                  </div>
-                  <div class="inbox-mail-row inbox-mail-preview">
-                    <span>{{ d.body.slice(0, 120) }}</span>
-                  </div>
-                  <button type="button" class="inbox-mail-del" (click)="$event.stopPropagation(); deleteDraft(d.id)" [attr.aria-label]="'inbox.delete' | t">×</button>
-                </li>
-              }
-            </ul>
+            <p class="inbox-muted inbox-no-match">{{ 'inbox.noSearchResults' | t }}</p>
           }
-        </div>
-      } @else {
-        <div class="inbox-list-view">
-          <h2 class="inbox-list-title">{{ 'inbox.folder.sent' | t }}</h2>
+        } @else {
+          <ul class="inbox-mail-list">
+            @for (d of filteredDrafts(); track d.id) {
+              <li class="inbox-mail-item" (click)="loadDraft(d)">
+                <div class="inbox-mail-row">
+                  <strong class="inbox-mail-to">{{ d.recipientName || d.recipientEmail || ('inbox.noRecipient' | t) }}</strong>
+                  <span class="inbox-mail-date">{{ formatDate(d.updatedAt) }}</span>
+                </div>
+                <div class="inbox-mail-row">
+                  <span class="inbox-mail-subject">{{ d.subject || ('inbox.noSubject' | t) }}</span>
+                </div>
+                <div class="inbox-mail-row inbox-mail-preview">
+                  <span>{{ d.body.slice(0, 140) }}</span>
+                </div>
+                <button type="button" class="inbox-mail-del" (click)="$event.stopPropagation(); deleteDraft(d.id)" [attr.aria-label]="'inbox.delete' | t">×</button>
+              </li>
+            }
+          </ul>
+        }
+      } @else if (currentFolder() === 'versendet') {
+        <header class="inbox-list-head">
+          <h2 class="inbox-content-title">{{ 'inbox.folder.versendet' | t }}</h2>
+          <span class="inbox-list-count">{{ filteredSent().length }}</span>
+        </header>
+        @if (filteredSent().length === 0) {
           @if (sent().length === 0) {
-            <p class="compute-empty">{{ 'inbox.sent.empty' | t }}</p>
+            <ng-container *ngTemplateOutlet="emptyState; context: { $implicit: 'versendet' }"></ng-container>
           } @else {
-            <ul class="inbox-mail-list">
-              @for (m of sent(); track m.id) {
-                <li class="inbox-mail-item inbox-mail-sent">
-                  <div class="inbox-mail-row">
-                    <strong class="inbox-mail-to">{{ m.recipientName || m.recipientEmail }}</strong>
-                    <span class="inbox-mail-date">{{ formatDate(m.sentAt ?? m.updatedAt) }}</span>
-                  </div>
-                  <div class="inbox-mail-row">
-                    <span class="inbox-mail-email">{{ m.recipientEmail }}</span>
-                  </div>
-                  <div class="inbox-mail-row">
-                    <span class="inbox-mail-subject">{{ m.subject }}</span>
-                  </div>
-                  <div class="inbox-mail-row inbox-mail-preview">
-                    <span>{{ m.body.slice(0, 120) }}</span>
-                  </div>
-                </li>
-              }
-            </ul>
+            <p class="inbox-muted inbox-no-match">{{ 'inbox.noSearchResults' | t }}</p>
+          }
+        } @else {
+          <ul class="inbox-mail-list">
+            @for (m of filteredSent(); track m.id) {
+              <li class="inbox-mail-item inbox-mail-sent">
+                <div class="inbox-mail-row">
+                  <strong class="inbox-mail-to">{{ m.recipientName || m.recipientEmail }}</strong>
+                  <span class="inbox-mail-date">{{ formatDate(m.sentAt ?? m.updatedAt) }}</span>
+                </div>
+                <div class="inbox-mail-row">
+                  <span class="inbox-mail-email">{{ m.recipientEmail }}</span>
+                </div>
+                <div class="inbox-mail-row">
+                  <span class="inbox-mail-subject">{{ m.subject }}</span>
+                </div>
+                <div class="inbox-mail-row inbox-mail-preview">
+                  <span>{{ m.body.slice(0, 140) }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      } @else if (currentFolder() === 'eingang') {
+        <header class="inbox-list-head">
+          <h2 class="inbox-content-title">{{ 'inbox.folder.eingang' | t }}</h2>
+        </header>
+        <ng-container *ngTemplateOutlet="emptyState; context: { $implicit: 'eingang' }"></ng-container>
+      } @else if (currentFolder() === 'spam') {
+        <header class="inbox-list-head">
+          <h2 class="inbox-content-title">{{ 'inbox.folder.spam' | t }}</h2>
+        </header>
+        <ng-container *ngTemplateOutlet="emptyState; context: { $implicit: 'spam' }"></ng-container>
+      }
+
+      <!-- Reusable empty state -->
+      <ng-template #emptyState let-folder>
+        <div class="inbox-empty-state">
+          <div class="inbox-empty-illustration" aria-hidden="true">
+            <svg viewBox="0 0 200 140" fill="none">
+              <defs>
+                <linearGradient id="emptyMailGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#e8e3ff"/>
+                  <stop offset="100%" stop-color="#cfc4ff"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="100" cy="125" rx="55" ry="6" fill="#e8e3ff" opacity="0.6"/>
+              <rect x="60" y="55" width="80" height="55" rx="5" fill="url(#emptyMailGrad)" stroke="#bda9ff" stroke-width="1.5"/>
+              <path d="M60 60 L100 88 L140 60" fill="none" stroke="#bda9ff" stroke-width="1.5" stroke-linejoin="round"/>
+              <rect x="40" y="35" width="80" height="55" rx="5" fill="#ffffff" stroke="#bda9ff" stroke-width="1.5"/>
+              <path d="M40 40 L80 68 L120 40" fill="none" stroke="#bda9ff" stroke-width="1.5" stroke-linejoin="round"/>
+              <g fill="#bda9ff" opacity="0.7">
+                <circle cx="155" cy="25" r="2"/>
+                <circle cx="170" cy="40" r="1.5"/>
+                <circle cx="35" cy="20" r="1.5"/>
+                <circle cx="25" cy="40" r="2"/>
+              </g>
+            </svg>
+          </div>
+          <h3 class="inbox-empty-title">
+            @if (folder === 'eingang') { {{ 'inbox.eingang.empty.title' | t }} }
+            @else if (folder === 'spam') { {{ 'inbox.spam.empty.title' | t }} }
+            @else if (folder === 'entwurfe') { {{ 'inbox.drafts.empty' | t }} }
+            @else { {{ 'inbox.sent.empty' | t }} }
+          </h3>
+          <p class="inbox-empty-text">
+            @if (folder === 'eingang') { {{ 'inbox.eingang.empty.text' | t }} }
+            @else if (folder === 'spam') { {{ 'inbox.spam.empty.text' | t }} }
+            @else { {{ 'inbox.empty.cta' | t }} }
+          </p>
+          @if (folder === 'eingang' || folder === 'entwurfe' || folder === 'versendet') {
+            <button type="button" class="inbox-empty-btn" (click)="newCompose()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              {{ 'inbox.newMessage' | t }}
+            </button>
           }
         </div>
-      }
+      </ng-template>
     </section>
   </div>
 </div>

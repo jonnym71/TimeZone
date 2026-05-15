@@ -6,11 +6,18 @@
     </button>
     <div class="spark-brand document-brand">
       <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M8 4h12l6 6v18a0 0 0 0 1 0 0H8z" fill="none" stroke="#FA7250" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M20 4v6h6" fill="none" stroke="#FA7250" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M12 16h12M12 20h12M12 24h8" stroke="#FA7250" stroke-width="2" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="brandGrad-document" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c5fff"/>
+            <stop offset="50%" stop-color="#6b80ff"/>
+            <stop offset="100%" stop-color="#5db4ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M8 4 H20 L26 10 V28 H8 Z" fill="none" stroke="url(#brandGrad-document)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M20 4 V10 H26" fill="none" stroke="url(#brandGrad-document)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 16 H22 M12 20 H22 M12 24 H18" stroke="url(#brandGrad-document)" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      <span>DOCUMENT</span>
+      <span>Lunaris</span>
     </div>
     <input
       class="document-title-input"

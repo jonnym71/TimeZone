@@ -6,28 +6,43 @@
     </button>
     <div class="spark-brand compute-brand">
       <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-        <rect x="5" y="3" width="22" height="26" rx="3" fill="none" stroke="#D26B2F" stroke-width="2"/>
-        <rect x="9" y="7" width="14" height="5" rx="0.8" fill="none" stroke="#D26B2F" stroke-width="1.5"/>
-        <circle cx="11.5" cy="17" r="1" fill="#D26B2F"/>
-        <circle cx="16" cy="17" r="1" fill="#D26B2F"/>
-        <circle cx="20.5" cy="17" r="1" fill="#D26B2F"/>
-        <circle cx="11.5" cy="21" r="1" fill="#D26B2F"/>
-        <circle cx="16" cy="21" r="1" fill="#D26B2F"/>
-        <circle cx="20.5" cy="21" r="1" fill="#D26B2F"/>
-        <circle cx="11.5" cy="25" r="1" fill="#D26B2F"/>
-        <circle cx="16" cy="25" r="1" fill="#D26B2F"/>
-        <circle cx="20.5" cy="25" r="1" fill="#D26B2F"/>
+        <defs>
+          <linearGradient id="brandGrad-compute" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c5fff"/>
+            <stop offset="50%" stop-color="#6b80ff"/>
+            <stop offset="100%" stop-color="#5db4ff"/>
+          </linearGradient>
+        </defs>
+        <rect x="5" y="3" width="22" height="26" rx="3" fill="none" stroke="url(#brandGrad-compute)" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="9" y="7" width="14" height="5" rx="0.8" fill="none" stroke="url(#brandGrad-compute)" stroke-width="1.5"/>
+        <circle cx="11.5" cy="17" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="16" cy="17" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="20.5" cy="17" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="11.5" cy="21" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="16" cy="21" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="20.5" cy="21" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="11.5" cy="25" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="16" cy="25" r="1.1" fill="url(#brandGrad-compute)"/>
+        <circle cx="20.5" cy="25" r="1.1" fill="url(#brandGrad-compute)"/>
       </svg>
-      <span>COMPUTE</span>
+      <span>Nexora</span>
     </div>
     <div class="compute-tabs">
       <button type="button" [class.active]="activeTab() === 'calc'" (click)="setTab('calc')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><rect x="7" y="6" width="10" height="3" rx="0.6"/><circle cx="9" cy="14" r="0.8" fill="currentColor"/><circle cx="12" cy="14" r="0.8" fill="currentColor"/><circle cx="15" cy="14" r="0.8" fill="currentColor"/></svg>
         {{ 'compute.tab.calc' | t }}
       </button>
+      <button type="button" [class.active]="activeTab() === 'formulas'" (click)="setTab('formulas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h5"/></svg>
+        {{ 'compute.tab.formulas' | t }}
+      </button>
       <button type="button" [class.active]="activeTab() === 'plot'" (click)="setTab('plot')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M4 16c2-4 4-6 8-6s6 2 8-2"/></svg>
         {{ 'compute.tab.plot' | t }}
+      </button>
+      <button type="button" [class.active]="activeTab() === 'coord'" (click)="setTab('coord')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><circle cx="9" cy="13" r="1.6" fill="currentColor"/><circle cx="14" cy="8" r="1.6" fill="currentColor"/><path d="M9 13L14 8"/></svg>
+        {{ 'compute.tab.coord' | t }}
       </button>
     </div>
     <div class="spark-actions">
@@ -77,6 +92,22 @@
         <button type="button" (click)="press('!')">x!</button>
         <button type="button" (click)="press('abs(')">|x|</button>
         <button type="button" (click)="press('%')">%</button>
+        <!-- Erweiterte Funktionen: Logarithmen + Trig -->
+        <button type="button" (click)="press('log10(')">log<sub>10</sub></button>
+        <button type="button" (click)="press('log2(')">log<sub>2</sub></button>
+        <button type="button" (click)="press('logb(')">log<sub>b</sub></button>
+        <button type="button" (click)="press('sec(')">sec</button>
+        <button type="button" (click)="press('csc(')">csc</button>
+        <button type="button" (click)="press('cot(')">cot</button>
+        <button type="button" (click)="press('sinh(')">sinh</button>
+        <button type="button" (click)="press('cosh(')">cosh</button>
+        <button type="button" (click)="press('tanh(')">tanh</button>
+        <button type="button" (click)="press('cbrt(')">∛</button>
+        <button type="button" (click)="press('exp(')">eˣ</button>
+        <button type="button" (click)="press('hypot(')">hypot</button>
+        <button type="button" (click)="press('ncr(')">nCr</button>
+        <button type="button" (click)="press('npr(')">nPr</button>
+        <button type="button" (click)="press('ans')">ans</button>
       </div>
 
       <!-- Main grid -->
@@ -110,6 +141,135 @@
       </div>
 
       <p class="compute-hint">{{ 'compute.hint' | t }}</p>
+    </section>
+    } @else if (activeTab() === 'formulas') {
+    <!-- Formel-Bibliothek -->
+    <section class="compute-formulas">
+      <header class="compute-formulas-head">
+        <h2>{{ 'compute.formulas.title' | t }}</h2>
+        <p>{{ 'compute.formulas.hint' | t }}</p>
+      </header>
+      <div class="formula-grid">
+        @for (f of formulas; track f.id) {
+          <article class="formula-card">
+            <h3 class="formula-card-title">{{ f.title }}</h3>
+            <code class="formula-card-formula">{{ f.formula }}</code>
+            <p class="formula-card-desc">{{ f.description }}</p>
+            <div class="formula-card-actions">
+              <code class="formula-card-template">{{ f.template }}</code>
+              <button type="button" class="formula-btn formula-btn-insert" (click)="insertFormula(f)">{{ 'compute.formulas.insert' | t }}</button>
+              <button type="button" class="formula-btn formula-btn-run" (click)="applyFormula(f)">{{ 'compute.formulas.run' | t }}</button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+    } @else if (activeTab() === 'coord') {
+    <!-- Koordinatensystem (Punkte & Formen einzeichnen) -->
+    <section class="compute-coord">
+      <div class="coord-toolbar">
+        <div class="coord-tools">
+          <button type="button" class="coord-tool-btn" [class.active]="coordTool() === 'point'" (click)="setCoordTool('point')" [attr.title]="'compute.coord.tool.point' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+            <span>{{ 'compute.coord.tool.point' | t }}</span>
+          </button>
+          <button type="button" class="coord-tool-btn" [class.active]="coordTool() === 'line'" (click)="setCoordTool('line')" [attr.title]="'compute.coord.tool.line' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="19" r="2" fill="currentColor"/><circle cx="19" cy="5" r="2" fill="currentColor"/><path d="M5 19L19 5"/></svg>
+            <span>{{ 'compute.coord.tool.line' | t }}</span>
+          </button>
+          <button type="button" class="coord-tool-btn" [class.active]="coordTool() === 'polygon'" (click)="setCoordTool('polygon')" [attr.title]="'compute.coord.tool.polygon' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3L21 10L17 21H7L3 10Z"/></svg>
+            <span>{{ 'compute.coord.tool.polygon' | t }}</span>
+          </button>
+          <button type="button" class="coord-tool-btn" [class.active]="coordTool() === 'circle'" (click)="setCoordTool('circle')" [attr.title]="'compute.coord.tool.circle' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+            <span>{{ 'compute.coord.tool.circle' | t }}</span>
+          </button>
+          <button type="button" class="coord-tool-btn" [class.active]="coordTool() === 'rect'" (click)="setCoordTool('rect')" [attr.title]="'compute.coord.tool.rect' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg>
+            <span>{{ 'compute.coord.tool.rect' | t }}</span>
+          </button>
+          <button type="button" class="coord-tool-btn coord-tool-danger" [class.active]="coordTool() === 'delete'" (click)="setCoordTool('delete')" [attr.title]="'compute.coord.tool.delete' | t">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            <span>{{ 'compute.coord.tool.delete' | t }}</span>
+          </button>
+        </div>
+        <div class="coord-toolbar-right">
+          @if (coordTool() === 'polygon' && coordPending().length >= 3) {
+            <button type="button" class="coord-action-btn coord-action-primary" (click)="finishPolygon()">{{ 'compute.coord.finish' | t }}</button>
+          }
+          @if (coordPending().length > 0) {
+            <button type="button" class="coord-action-btn" (click)="cancelPending()" title="Auswahl abbrechen">⨯ {{ coordPending().length }}</button>
+          }
+          <label class="coord-snap-toggle">
+            <input type="checkbox" [checked]="coordSnap()" (change)="toggleCoordSnap()">
+            {{ 'compute.coord.snap' | t }}
+          </label>
+          <button type="button" class="coord-action-btn coord-action-danger" (click)="clearCoord()">{{ 'compute.coord.clear' | t }}</button>
+        </div>
+      </div>
+
+      <div class="coord-canvas-wrap">
+        <canvas #coordCanvas
+          (click)="onCoordCanvasClick($event)"
+          (mousemove)="onCoordCanvasMove($event)"
+          (mouseleave)="onCoordCanvasLeave()"></canvas>
+        <div class="plot-zoom-controls">
+          <button type="button" class="spark-icon-btn" (click)="coordZoomIn()" title="Vergrößern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6M11 8v6"/></svg></button>
+          <button type="button" class="spark-icon-btn" (click)="coordZoomOut()" title="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6"/></svg></button>
+          <button type="button" class="spark-icon-btn" (click)="coordResetView()" title="Ansicht zurücksetzen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+        </div>
+        @if (coordCursor()) {
+          <div class="coord-cursor-readout">x = {{ coordCursor()!.x }}, y = {{ coordCursor()!.y }}</div>
+        }
+      </div>
+
+      <div class="coord-add-bar">
+        <span>{{ 'compute.coord.addPoint' | t }}:</span>
+        <input type="number" step="any" class="coord-input" placeholder="x" [ngModel]="newPointX()" (ngModelChange)="newPointX.set($event)" (keydown.enter)="addPointManual()">
+        <input type="number" step="any" class="coord-input" placeholder="y" [ngModel]="newPointY()" (ngModelChange)="newPointY.set($event)" (keydown.enter)="addPointManual()">
+        <button type="button" class="coord-action-btn coord-action-primary" (click)="addPointManual()">+</button>
+      </div>
+
+      <div class="plot-panels">
+        <div class="plot-panel">
+          <header><h3>{{ 'compute.coord.points' | t }}</h3><span class="compute-count">{{ coordPoints().length }}</span></header>
+          <div class="plot-panel-body">
+            @if (coordPoints().length === 0) {
+              <p class="compute-empty">{{ 'compute.coord.empty' | t }}</p>
+            } @else {
+              <ul class="coord-list">
+                @for (p of coordPoints(); track p.id) {
+                  <li class="coord-list-item">
+                    <span class="coord-pt-dot"></span>
+                    <code>({{ p.x }}, {{ p.y }})</code>
+                    <button type="button" class="spark-icon-btn spark-icon-btn-xs spark-icon-btn-danger" (click)="deleteCoordPoint(p.id)" aria-label="Löschen">×</button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="plot-panel">
+          <header><h3>{{ 'compute.coord.shapes' | t }}</h3><span class="compute-count">{{ coordShapes().length }}</span></header>
+          <div class="plot-panel-body">
+            @if (coordShapes().length === 0) {
+              <p class="compute-empty">—</p>
+            } @else {
+              <ul class="coord-list">
+                @for (s of coordShapes(); track s.id) {
+                  <li class="coord-list-item">
+                    <span class="coord-shape-dot" [style.background]="s.color"></span>
+                    <code>{{ s.type }} · {{ s.pointIds.length }} pt</code>
+                    <button type="button" class="spark-icon-btn spark-icon-btn-xs spark-icon-btn-danger" (click)="deleteCoordShape(s.id)" aria-label="Löschen">×</button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
     </section>
     } @else {
     <!-- Function Plotter -->

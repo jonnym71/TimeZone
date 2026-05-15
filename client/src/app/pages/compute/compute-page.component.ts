@@ -34,8 +34,89 @@ interface SavedState {
   vars: Record<string, number>;
   plots?: PlotFunction[];
   plotState?: PlotState;
-  activeTab?: 'calc' | 'plot';
+  activeTab?: 'calc' | 'plot' | 'formulas' | 'coord';
+  coordPoints?: CoordPoint[];
+  coordShapes?: CoordShape[];
+  coordView?: CoordView;
+  coordSnap?: boolean;
 }
+
+export interface CoordPoint {
+  id: string;
+  x: number;
+  y: number;
+}
+
+export type CoordShapeType = 'line' | 'polygon' | 'circle' | 'rect';
+
+export interface CoordShape {
+  id: string;
+  type: CoordShapeType;
+  pointIds: string[];   // line/rect: 2 pts | polygon: n pts | circle: 2 pts (center, edge)
+  color: string;
+}
+
+export type CoordTool = 'point' | 'line' | 'polygon' | 'circle' | 'rect' | 'delete';
+
+export interface CoordView {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+}
+
+export interface FormulaCard {
+  id: string;
+  title: string;
+  formula: string;
+  template: string;       // Inserted into expression (with sample numbers)
+  description: string;
+}
+
+export const FORMULA_CARDS: FormulaCard[] = [
+  { id: 'pythagoras', title: 'Pythagoras', formula: 'c = √(a² + b²)',
+    template: 'hypot(3, 4)', description: 'Hypotenuse aus zwei Katheten' },
+  { id: 'distance', title: 'Distanz 2D', formula: 'd = √((x₂−x₁)² + (y₂−y₁)²)',
+    template: 'dist(0, 0, 3, 4)', description: 'Abstand zweier Punkte' },
+  { id: 'quadratic-p', title: 'Quadratisch (+)', formula: 'x = (−b + √(b²−4ac)) / 2a',
+    template: 'quadp(1, -3, 2)', description: 'ax² + bx + c = 0, +Lösung' },
+  { id: 'quadratic-m', title: 'Quadratisch (−)', formula: 'x = (−b − √(b²−4ac)) / 2a',
+    template: 'quadm(1, -3, 2)', description: 'ax² + bx + c = 0, −Lösung' },
+  { id: 'disc', title: 'Diskriminante', formula: 'D = b² − 4ac',
+    template: 'disc(1, -3, 2)', description: 'Bestimmt Anzahl Lösungen' },
+  { id: 'lin', title: 'Lineare Gleichung', formula: 'ax + b = 0',
+    template: 'linsolve(2, -6)', description: 'Lösung x = −b/a' },
+  { id: 'circle-area', title: 'Kreisfläche', formula: 'A = π · r²',
+    template: 'area(5)', description: 'Fläche aus Radius' },
+  { id: 'circle-circ', title: 'Kreisumfang', formula: 'U = 2π · r',
+    template: 'circ(5)', description: 'Umfang aus Radius' },
+  { id: 'log-base', title: 'Logarithmus (Basis)', formula: 'logₐ(x) = ln x / ln a',
+    template: 'logb(2, 8)', description: 'log zur beliebigen Basis' },
+  { id: 'log10', title: 'Zehnerlogarithmus', formula: 'log₁₀(x)',
+    template: 'log10(1000)', description: 'Basis 10' },
+  { id: 'log2', title: 'Zweierlogarithmus', formula: 'log₂(x)',
+    template: 'log2(64)', description: 'Basis 2 (Informatik)' },
+  { id: 'percent', title: 'Prozent', formula: 'p% von X',
+    template: 'pct(15, 200)', description: '15% von 200 = 30' },
+  { id: 'pctof', title: 'Anteil in %', formula: 'p = Teil / Ganzes · 100',
+    template: 'pctof(30, 200)', description: 'wieviel % ist 30 von 200' },
+  { id: 'compound', title: 'Zinseszins', formula: 'K = K₀ · (1 + p/100)ⁿ',
+    template: 'compound(1000, 5, 10)', description: '1000 €, 5%, 10 Jahre' },
+  { id: 'ncr', title: 'Kombinationen', formula: 'C(n,r) = n! / (r!·(n−r)!)',
+    template: 'ncr(49, 6)', description: 'z. B. Lotto 6 aus 49' },
+  { id: 'npr', title: 'Permutationen', formula: 'P(n,r) = n! / (n−r)!',
+    template: 'npr(10, 3)', description: 'geordnete Anordnungen' },
+  { id: 'gcd', title: 'ggT', formula: 'größter gemeinsamer Teiler',
+    template: 'gcd(48, 18)', description: 'Euklidischer Algorithmus' },
+  { id: 'lcm', title: 'kgV', formula: 'kleinstes gemeinsames Vielfaches',
+    template: 'lcm(4, 6)', description: 'aus Zahlenmenge' },
+  { id: 'mean', title: 'Mittelwert', formula: 'x̄ = Σx / n',
+    template: 'mean(2, 4, 6, 8)', description: 'arithmetisches Mittel' },
+  { id: 'median', title: 'Median', formula: 'mittlerer Wert',
+    template: 'median(1, 3, 5, 7, 9)', description: 'sortierte Mitte' },
+  { id: 'sd', title: 'Standardabweichung', formula: 'σ = √(Σ(x−x̄)² / n)',
+    template: 'sd(2, 4, 6, 8)', description: 'Streuung um Mittelwert' },
+];
 
 const PLOT_COLORS = ['#FB542B', '#FA7250', '#FFB45A', '#2E8B7B', '#5B9BD5', '#9F7FE0', '#E84A8C'];
 
@@ -49,17 +130,30 @@ export class ComputePageComponent implements AfterViewInit {
   readonly overlay = inject(OverlayService);
 
   @ViewChild('plotCanvas') plotCanvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('coordCanvas') coordCanvasRef?: ElementRef<HTMLCanvasElement>;
 
   readonly expression = signal('');
   readonly mode = signal<AngleMode>('rad');
   readonly history = signal<HistoryItem[]>([]);
   readonly vars = signal<Record<string, number>>({});
 
-  readonly activeTab = signal<'calc' | 'plot'>('calc');
+  readonly activeTab = signal<'calc' | 'plot' | 'formulas' | 'coord'>('calc');
+  readonly formulas = FORMULA_CARDS;
   readonly plots = signal<PlotFunction[]>([]);
   readonly plotState = signal<PlotState>({ xMin: -10, xMax: 10, yMin: -5, yMax: 5, yAuto: true });
   readonly newPlotExpr = signal('');
   readonly hoverCoord = signal<{ x: number; y: number } | null>(null);
+
+  // === Koordinatensystem (Punkte & Formen) ===
+  readonly coordPoints = signal<CoordPoint[]>([]);
+  readonly coordShapes = signal<CoordShape[]>([]);
+  readonly coordTool = signal<CoordTool>('point');
+  readonly coordPending = signal<string[]>([]);      // IDs der schon gewählten Punkte beim Shape-Bau
+  readonly coordView = signal<CoordView>({ xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
+  readonly coordSnap = signal<boolean>(true);
+  readonly coordCursor = signal<{ x: number; y: number } | null>(null);
+  readonly newPointX = signal('');
+  readonly newPointY = signal('');
 
   readonly liveResult = computed(() => {
     const expr = this.expression();
@@ -84,6 +178,10 @@ export class ComputePageComponent implements AfterViewInit {
         plots: this.plots(),
         plotState: this.plotState(),
         activeTab: this.activeTab(),
+        coordPoints: this.coordPoints(),
+        coordShapes: this.coordShapes(),
+        coordView: this.coordView(),
+        coordSnap: this.coordSnap(),
       };
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
     });
@@ -98,10 +196,24 @@ export class ComputePageComponent implements AfterViewInit {
         queueMicrotask(() => this.drawPlot());
       }
     });
+
+    // Koordinatensystem neu zeichnen
+    effect(() => {
+      this.coordPoints();
+      this.coordShapes();
+      this.coordView();
+      this.coordPending();
+      this.coordCursor();
+      this.coordTool();
+      if (this.activeTab() === 'coord') {
+        queueMicrotask(() => this.drawCoord());
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     if (this.activeTab() === 'plot') queueMicrotask(() => this.drawPlot());
+    if (this.activeTab() === 'coord') queueMicrotask(() => this.drawCoord());
   }
 
   private load(): void {
@@ -115,12 +227,28 @@ export class ComputePageComponent implements AfterViewInit {
       if (s.vars && typeof s.vars === 'object') this.vars.set(s.vars);
       if (Array.isArray(s.plots)) this.plots.set(s.plots);
       if (s.plotState) this.plotState.set(s.plotState);
-      if (s.activeTab === 'calc' || s.activeTab === 'plot') this.activeTab.set(s.activeTab);
+      if (s.activeTab === 'calc' || s.activeTab === 'plot' || s.activeTab === 'formulas' || s.activeTab === 'coord') this.activeTab.set(s.activeTab);
+      if (Array.isArray(s.coordPoints)) this.coordPoints.set(s.coordPoints);
+      if (Array.isArray(s.coordShapes)) this.coordShapes.set(s.coordShapes);
+      if (s.coordView) this.coordView.set(s.coordView);
+      if (typeof s.coordSnap === 'boolean') this.coordSnap.set(s.coordSnap);
     } catch {}
   }
 
   /* ===== Tabs ===== */
-  setTab(t: 'calc' | 'plot'): void { this.activeTab.set(t); }
+  setTab(t: 'calc' | 'plot' | 'formulas' | 'coord'): void { this.activeTab.set(t); }
+
+  /* ===== Formeln einfügen ===== */
+  insertFormula(card: FormulaCard): void {
+    this.expression.set(card.template);
+    this.activeTab.set('calc');
+  }
+
+  applyFormula(card: FormulaCard): void {
+    this.expression.set(card.template);
+    this.evaluate();
+    this.activeTab.set('calc');
+  }
 
   /* ===== Plot management ===== */
   addPlot(): void {
@@ -212,8 +340,9 @@ export class ComputePageComponent implements AfterViewInit {
       if (range) { yMin = range.min; yMax = range.max; }
     }
 
-    // Background
-    ctx.fillStyle = '#100b07';
+    // Background – Brave Welcome glass (semi-transparent, lets parent gradient bleed through)
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(15, 8, 30, 0.35)';
     ctx.fillRect(0, 0, W, H);
 
     const xToPx = (x: number) => ((x - xMin) / (xMax - xMin)) * W;
@@ -230,13 +359,26 @@ export class ComputePageComponent implements AfterViewInit {
       this.drawFunction(ctx, p, W, H, xMin, xMax, yMin, yMax, xToPx, yToPx);
     }
 
+    // Achsen-Labels "x" und "y" an Achsenenden
+    const x0 = xToPx(0), y0 = yToPx(0);
+    ctx.fillStyle = '#9b80ff';
+    ctx.font = 'italic 600 13px "Inter", system-ui, sans-serif';
+    if (y0 >= 0 && y0 <= H) {
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText('x', W - 6, Math.max(12, y0 - 8));
+    }
+    if (x0 >= 0 && x0 <= W) {
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText('y', Math.min(W - 12, x0 + 6), 4);
+    }
+
     // Hover crosshair + readout
     const hov = this.hoverCoord();
     if (hov) {
       const px = xToPx(hov.x);
       const py = yToPx(hov.y);
       ctx.save();
-      ctx.strokeStyle = 'rgba(255, 200, 160, 0.35)';
+      ctx.strokeStyle = 'rgba(155, 128, 255, 0.55)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -253,11 +395,11 @@ export class ComputePageComponent implements AfterViewInit {
       const boxH = 22;
       const bx = Math.min(W - boxW - 6, px + 10);
       const by = Math.max(6, py - boxH - 8);
-      ctx.fillStyle = 'rgba(20, 16, 13, 0.92)';
+      ctx.fillStyle = 'rgba(20, 12, 40, 0.92)';
       ctx.fillRect(bx, by, boxW, boxH);
-      ctx.strokeStyle = 'rgba(251, 84, 43, 0.45)';
+      ctx.strokeStyle = 'rgba(155, 128, 255, 0.55)';
       ctx.strokeRect(bx, by, boxW, boxH);
-      ctx.fillStyle = '#FB542B';
+      ctx.fillStyle = '#c8b8ff';
       ctx.fillText(label, bx + padX, by + boxH - padY - 1);
       ctx.restore();
     }
@@ -293,8 +435,8 @@ export class ComputePageComponent implements AfterViewInit {
     const xStep = niceStep(xMax - xMin);
     const yStep = niceStep(yMax - yMin);
 
-    // Minor grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    // Minor grid (hell, dezent auf dunklem Glas)
+    ctx.strokeStyle = 'rgba(155, 128, 255, 0.16)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let x = Math.ceil(xMin / xStep) * xStep; x <= xMax; x += xStep) {
@@ -307,17 +449,30 @@ export class ComputePageComponent implements AfterViewInit {
     }
     ctx.stroke();
 
-    // Axes
+    // Achsen (kräftiger, hell auf dunkel)
     const x0 = xToPx(0), y0 = yToPx(0);
-    ctx.strokeStyle = 'rgba(255, 200, 160, 0.45)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(200, 184, 255, 0.7)';
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
     if (y0 >= 0 && y0 <= H) { ctx.moveTo(0, y0); ctx.lineTo(W, y0); }
     if (x0 >= 0 && x0 <= W) { ctx.moveTo(x0, 0); ctx.lineTo(x0, H); }
     ctx.stroke();
 
-    // Axis labels
-    ctx.fillStyle = 'rgba(255, 215, 195, 0.65)';
+    // Pfeilspitzen an Achsenenden
+    ctx.fillStyle = 'rgba(200, 184, 255, 0.9)';
+    if (y0 >= 0 && y0 <= H) {
+      ctx.beginPath();
+      ctx.moveTo(W, y0); ctx.lineTo(W - 8, y0 - 4); ctx.lineTo(W - 8, y0 + 4);
+      ctx.closePath(); ctx.fill();
+    }
+    if (x0 >= 0 && x0 <= W) {
+      ctx.beginPath();
+      ctx.moveTo(x0, 0); ctx.lineTo(x0 - 4, 8); ctx.lineTo(x0 + 4, 8);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // Tick-Beschriftung
+    ctx.fillStyle = 'rgba(220, 210, 255, 0.7)';
     ctx.font = '11px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -462,6 +617,329 @@ export class ComputePageComponent implements AfterViewInit {
 
   close(): void { this.overlay.closeCompute(); }
 
+  /* ===== Koordinatensystem: Tools & Aktionen ===== */
+  setCoordTool(tool: CoordTool): void {
+    this.coordTool.set(tool);
+    this.coordPending.set([]);
+  }
+
+  private genId(): string { return Math.random().toString(36).slice(2, 9); }
+  private snapVal(v: number): number {
+    if (!this.coordSnap()) return v;
+    return Math.round(v);
+  }
+
+  private addPointAt(x: number, y: number): CoordPoint {
+    const p: CoordPoint = { id: this.genId(), x: this.snapVal(x), y: this.snapVal(y) };
+    this.coordPoints.update(ps => [...ps, p]);
+    return p;
+  }
+
+  addPointManual(): void {
+    const x = parseFloat(this.newPointX());
+    const y = parseFloat(this.newPointY());
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    this.coordPoints.update(ps => [...ps, { id: this.genId(), x, y }]);
+    this.newPointX.set(''); this.newPointY.set('');
+  }
+
+  private nextShapeColor(): string {
+    return PLOT_COLORS[this.coordShapes().length % PLOT_COLORS.length];
+  }
+
+  private commitShape(type: CoordShapeType, pointIds: string[]): void {
+    this.coordShapes.update(ss => [...ss, {
+      id: this.genId(), type, pointIds, color: this.nextShapeColor(),
+    }]);
+    this.coordPending.set([]);
+  }
+
+  finishPolygon(): void {
+    const ids = this.coordPending();
+    if (ids.length >= 3 && this.coordTool() === 'polygon') {
+      this.commitShape('polygon', ids);
+    }
+  }
+
+  cancelPending(): void {
+    this.coordPending.set([]);
+  }
+
+  onCoordCanvasClick(event: MouseEvent): void {
+    const cvs = this.coordCanvasRef?.nativeElement;
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    const mx = event.clientX - rect.left;
+    const my = event.clientY - rect.top;
+    const v = this.coordView();
+    const x = v.xMin + (mx / rect.width) * (v.xMax - v.xMin);
+    const y = v.yMin + ((rect.height - my) / rect.height) * (v.yMax - v.yMin);
+
+    const tool = this.coordTool();
+    if (tool === 'delete') {
+      const hit = this.findPointAt(x, y);
+      if (hit) {
+        this.coordPoints.update(ps => ps.filter(p => p.id !== hit.id));
+        this.coordShapes.update(ss => ss.filter(s => !s.pointIds.includes(hit.id)));
+      }
+      return;
+    }
+    if (tool === 'point') {
+      this.addPointAt(x, y);
+      return;
+    }
+    // Shape-Tools: existing point oder neuen Punkt erzeugen
+    let pid: string;
+    const hit = this.findPointAt(x, y);
+    if (hit) pid = hit.id;
+    else pid = this.addPointAt(x, y).id;
+
+    this.coordPending.update(arr => [...arr, pid]);
+    const pending = this.coordPending();
+    if (tool === 'line' && pending.length === 2) {
+      this.commitShape('line', pending);
+    } else if (tool === 'rect' && pending.length === 2) {
+      this.commitShape('rect', pending);
+    } else if (tool === 'circle' && pending.length === 2) {
+      this.commitShape('circle', pending);
+    }
+    // polygon: explizit über "Abschließen"-Button
+  }
+
+  onCoordCanvasMove(event: MouseEvent): void {
+    const cvs = this.coordCanvasRef?.nativeElement;
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    const mx = event.clientX - rect.left;
+    const my = event.clientY - rect.top;
+    const v = this.coordView();
+    const x = v.xMin + (mx / rect.width) * (v.xMax - v.xMin);
+    const y = v.yMin + ((rect.height - my) / rect.height) * (v.yMax - v.yMin);
+    this.coordCursor.set({ x: this.snapVal(x), y: this.snapVal(y) });
+  }
+
+  onCoordCanvasLeave(): void { this.coordCursor.set(null); }
+
+  private findPointAt(x: number, y: number): CoordPoint | undefined {
+    const v = this.coordView();
+    const range = Math.max(v.xMax - v.xMin, v.yMax - v.yMin);
+    const tol = range * 0.025;   // 2.5% des Bereichs
+    return this.coordPoints().find(p => Math.hypot(p.x - x, p.y - y) <= tol);
+  }
+
+  deleteCoordPoint(id: string): void {
+    this.coordPoints.update(ps => ps.filter(p => p.id !== id));
+    this.coordShapes.update(ss => ss.filter(s => !s.pointIds.includes(id)));
+    this.coordPending.update(ids => ids.filter(i => i !== id));
+  }
+
+  deleteCoordShape(id: string): void {
+    this.coordShapes.update(ss => ss.filter(s => s.id !== id));
+  }
+
+  clearCoord(): void {
+    if (!confirm('Alle Punkte und Formen löschen?')) return;
+    this.coordPoints.set([]);
+    this.coordShapes.set([]);
+    this.coordPending.set([]);
+  }
+
+  toggleCoordSnap(): void { this.coordSnap.update(s => !s); }
+
+  coordZoomIn(): void {
+    this.coordView.update(v => {
+      const cx = (v.xMin + v.xMax) / 2;
+      const cy = (v.yMin + v.yMax) / 2;
+      const xr = (v.xMax - v.xMin) / 4;
+      const yr = (v.yMax - v.yMin) / 4;
+      return { xMin: cx - xr, xMax: cx + xr, yMin: cy - yr, yMax: cy + yr };
+    });
+  }
+  coordZoomOut(): void {
+    this.coordView.update(v => {
+      const cx = (v.xMin + v.xMax) / 2;
+      const cy = (v.yMin + v.yMax) / 2;
+      const xr = v.xMax - v.xMin;
+      const yr = v.yMax - v.yMin;
+      return { xMin: cx - xr, xMax: cx + xr, yMin: cy - yr, yMax: cy + yr };
+    });
+  }
+  coordResetView(): void {
+    this.coordView.set({ xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
+  }
+
+  /* ===== Koordinatensystem: Zeichnen ===== */
+  drawCoord(): void {
+    const cvs = this.coordCanvasRef?.nativeElement;
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    if (!ctx) return;
+
+    const rect = cvs.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    if (cvs.width !== rect.width * dpr || cvs.height !== rect.height * dpr) {
+      cvs.width = Math.max(1, Math.floor(rect.width * dpr));
+      cvs.height = Math.max(1, Math.floor(rect.height * dpr));
+    }
+    const W = rect.width;
+    const H = rect.height;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const v = this.coordView();
+    const xToPx = (x: number) => ((x - v.xMin) / (v.xMax - v.xMin)) * W;
+    const yToPx = (y: number) => H - ((y - v.yMin) / (v.yMax - v.yMin)) * H;
+
+    // Background – Brave Welcome glass
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(15, 8, 30, 0.35)';
+    ctx.fillRect(0, 0, W, H);
+
+    this.drawGrid(ctx, W, H, v.xMin, v.xMax, v.yMin, v.yMax, xToPx, yToPx);
+
+    // Achsen-Labels
+    const x0 = xToPx(0), y0 = yToPx(0);
+    ctx.fillStyle = '#c8b8ff';
+    ctx.font = 'italic 600 13px "Inter", system-ui, sans-serif';
+    if (y0 >= 0 && y0 <= H) {
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText('x', W - 6, Math.max(12, y0 - 8));
+    }
+    if (x0 >= 0 && x0 <= W) {
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText('y', Math.min(W - 12, x0 + 6), 4);
+    }
+
+    // Shapes zeichnen
+    const points = this.coordPoints();
+    const ptMap = new Map(points.map(p => [p.id, p]));
+    for (const s of this.coordShapes()) {
+      this.drawShape(ctx, s, ptMap, xToPx, yToPx);
+    }
+
+    // Pending shape (Vorschau)
+    const pending = this.coordPending();
+    if (pending.length > 0) {
+      const pendingPts = pending.map(id => ptMap.get(id)!).filter(Boolean);
+      const cursor = this.coordCursor();
+      ctx.save();
+      ctx.strokeStyle = 'rgba(200, 184, 255, 0.85)';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([5, 4]);
+      const tool = this.coordTool();
+      if (tool === 'polygon' || tool === 'line') {
+        ctx.beginPath();
+        if (pendingPts.length > 0) {
+          ctx.moveTo(xToPx(pendingPts[0].x), yToPx(pendingPts[0].y));
+          for (let i = 1; i < pendingPts.length; i++) {
+            ctx.lineTo(xToPx(pendingPts[i].x), yToPx(pendingPts[i].y));
+          }
+          if (cursor) ctx.lineTo(xToPx(cursor.x), yToPx(cursor.y));
+        }
+        ctx.stroke();
+      } else if (tool === 'rect' && pendingPts.length === 1 && cursor) {
+        const ax = xToPx(pendingPts[0].x), ay = yToPx(pendingPts[0].y);
+        const bx = xToPx(cursor.x), by = yToPx(cursor.y);
+        ctx.strokeRect(Math.min(ax, bx), Math.min(ay, by), Math.abs(bx - ax), Math.abs(by - ay));
+      } else if (tool === 'circle' && pendingPts.length === 1 && cursor) {
+        const cx = xToPx(pendingPts[0].x), cy = yToPx(pendingPts[0].y);
+        const rx = xToPx(cursor.x), ry = yToPx(cursor.y);
+        const rPx = Math.hypot(rx - cx, ry - cy);
+        ctx.beginPath();
+        ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Punkte zeichnen
+    for (const p of points) {
+      const px = xToPx(p.x), py = yToPx(p.y);
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#c8b8ff';
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '11px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      // Shadow für bessere Lesbarkeit auf bunter Aurora
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+      ctx.shadowBlur = 4;
+      ctx.fillText(`(${formatNumber(p.x)}, ${formatNumber(p.y)})`, px + 7, py - 6);
+      ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+    }
+
+    // Cursor-Snap-Indikator
+    const cursor = this.coordCursor();
+    if (cursor) {
+      const px = xToPx(cursor.x), py = yToPx(cursor.y);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(200, 184, 255, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, py); ctx.lineTo(W, py);
+      ctx.moveTo(px, 0); ctx.lineTo(px, H);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Tool-spezifisches Vorschau-Symbol
+      if (this.coordTool() === 'point') {
+        ctx.fillStyle = 'rgba(200, 184, 255, 0.55)';
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  private drawShape(
+    ctx: CanvasRenderingContext2D,
+    shape: CoordShape,
+    ptMap: Map<string, CoordPoint>,
+    xToPx: (x: number) => number,
+    yToPx: (y: number) => number,
+  ): void {
+    const pts = shape.pointIds.map(id => ptMap.get(id)!).filter(Boolean);
+    if (pts.length === 0) return;
+    ctx.strokeStyle = shape.color;
+    ctx.fillStyle = shape.color + '22';
+    ctx.lineWidth = 2.2;
+    ctx.lineJoin = 'round';
+
+    if (shape.type === 'line' && pts.length >= 2) {
+      ctx.beginPath();
+      ctx.moveTo(xToPx(pts[0].x), yToPx(pts[0].y));
+      ctx.lineTo(xToPx(pts[1].x), yToPx(pts[1].y));
+      ctx.stroke();
+    } else if (shape.type === 'polygon' && pts.length >= 3) {
+      ctx.beginPath();
+      ctx.moveTo(xToPx(pts[0].x), yToPx(pts[0].y));
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(xToPx(pts[i].x), yToPx(pts[i].y));
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (shape.type === 'rect' && pts.length >= 2) {
+      const ax = xToPx(pts[0].x), ay = yToPx(pts[0].y);
+      const bx = xToPx(pts[1].x), by = yToPx(pts[1].y);
+      const rx = Math.min(ax, bx), ry = Math.min(ay, by);
+      const rw = Math.abs(bx - ax), rh = Math.abs(by - ay);
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeRect(rx, ry, rw, rh);
+    } else if (shape.type === 'circle' && pts.length >= 2) {
+      const cx = xToPx(pts[0].x), cy = yToPx(pts[0].y);
+      const rx = xToPx(pts[1].x), ry = yToPx(pts[1].y);
+      const rPx = Math.hypot(rx - cx, ry - cy);
+      ctx.beginPath();
+      ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
   /* ===== Keyboard input ===== */
 
   @HostListener('document:keydown', ['$event'])
@@ -489,6 +967,7 @@ export class ComputePageComponent implements AfterViewInit {
   @HostListener('window:resize')
   onResize(): void {
     if (this.activeTab() === 'plot') this.drawPlot();
+    if (this.activeTab() === 'coord') this.drawCoord();
   }
 }
 

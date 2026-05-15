@@ -7,12 +7,17 @@
       </button>
       <div class="spark-brand">
         <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-          <rect x="3" y="5" width="26" height="20" rx="3" fill="none" stroke="#FB542B" stroke-width="2"/>
-          <path d="M17 9 L11 17 H15 L13 23 L21 14 H17 L19 9 Z" fill="#FB542B"/>
-          <circle cx="6" cy="28" r="1" fill="#FB542B"/>
-          <circle cx="10" cy="28" r="1" fill="#FB542B"/>
+          <defs>
+            <linearGradient id="brandGrad-project" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7c5fff"/>
+              <stop offset="50%" stop-color="#6b80ff"/>
+              <stop offset="100%" stop-color="#5db4ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="6" width="24" height="18" rx="3" fill="none" stroke="url(#brandGrad-project)" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M16 10 L12 16 H14 L13 20 L18 14 H16 L17 10 Z" fill="url(#brandGrad-project)"/>
         </svg>
-        <span>PROJECT</span>
+        <span>Vireon</span>
       </div>
       <div class="spark-actions">
         <button type="button" class="spark-icon-btn" (click)="resetDoc()" [attr.title]="'spark.reset' | t" aria-label="Reset">
@@ -76,6 +81,20 @@
       </button>
       <button type="button" class="spark-icon-btn" [class.active]="activeRegion()?.underline" [disabled]="!selectedRegion()" (click)="toggleUnderline()" [attr.title]="'spark.underline' | t" aria-label="Underline">
         <u>U</u>
+      </button>
+
+      <div class="spark-tool-divider"></div>
+
+      <!-- Bullet list toggle -->
+      <button
+        type="button"
+        class="spark-icon-btn"
+        [class.active]="(activeRegion()?.bulletStyle && activeRegion()?.bulletStyle !== 'none') || (selectedElement()?.type === 'text' && selectedElement()?.bulletStyle && selectedElement()?.bulletStyle !== 'none')"
+        [disabled]="!selectedRegion() && selectedElement()?.type !== 'text'"
+        (click)="cycleBulletStyleForActive()"
+        title="Aufzählungspunkte (• / 1. / aus)"
+        aria-label="Bullets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="7" r="1.4" fill="currentColor"/><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="5" cy="17" r="1.4" fill="currentColor"/><path d="M10 7h10M10 12h10M10 17h10"/></svg>
       </button>
 
       <div class="spark-tool-divider"></div>
@@ -153,6 +172,33 @@
         <button type="button" class="spark-icon-btn" (click)="deleteSelectedElement()" [attr.title]="'spark.delete' | t" aria-label="Delete" style="color:#ff6b3d">×</button>
       }
 
+      <!-- Erweitert: Entwurf, Übergänge, Tabelle, Diagramm, Rechner, Symbole -->
+      <div class="spark-tool-divider"></div>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" [class.active]="openPanel() === 'themes'" (click)="togglePanel('themes')" title="Entwurf / Folien-Design">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M9 4v14"/></svg>
+        <span>Entwurf</span>
+      </button>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" [class.active]="openPanel() === 'transitions'" (click)="togglePanel('transitions')" title="Folienübergänge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 6h11l-3-3M4 18h11l-3 3"/><rect x="14" y="9" width="6" height="6" rx="1"/></svg>
+        <span>Übergänge</span>
+      </button>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" (click)="insertTable()" title="Tabelle einfügen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 10h18M3 16h18M9 4v16M15 4v16"/></svg>
+        <span>Tabelle</span>
+      </button>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" (click)="insertChart()" title="Diagramm einfügen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v16h16"/><rect x="7" y="11" width="3" height="6" fill="currentColor" stroke="none"/><rect x="12" y="7" width="3" height="10" fill="currentColor" stroke="none"/><rect x="17" y="13" width="3" height="4" fill="currentColor" stroke="none"/></svg>
+        <span>Diagramm</span>
+      </button>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" (click)="insertCalc()" title="Rechner einfügen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3" rx="0.5"/><circle cx="9" cy="13" r="0.7" fill="currentColor"/><circle cx="12" cy="13" r="0.7" fill="currentColor"/><circle cx="15" cy="13" r="0.7" fill="currentColor"/><circle cx="9" cy="17" r="0.7" fill="currentColor"/><circle cx="12" cy="17" r="0.7" fill="currentColor"/><circle cx="15" cy="17" r="0.7" fill="currentColor"/></svg>
+        <span>Rechner</span>
+      </button>
+      <button type="button" class="spark-icon-btn spark-icon-btn-text" [class.active]="openPanel() === 'symbols'" (click)="togglePanel('symbols')" title="Symbole / Piktogramme / Währung">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v6c0 4 3 7 7 7s7-3 7-7V4"/><path d="M5 20h14"/></svg>
+        <span>Symbole</span>
+      </button>
+
       <!-- Slide background -->
       <div class="spark-tool-divider"></div>
       <span class="spark-tool-label">{{ 'spark.bg' | t }}</span>
@@ -172,6 +218,77 @@
         </label>
       </div>
     </div>
+
+    <!-- ===== Picker-Panels (Themes / Transitions / Symbols) ===== -->
+    @if (openPanel() === 'themes') {
+      <div class="spark-panel">
+        <div class="spark-panel-head">
+          <strong>Entwurf wählen</strong>
+          <button type="button" class="spark-panel-close" (click)="closePanels()" aria-label="Schließen">×</button>
+        </div>
+        <div class="spark-theme-grid">
+          @for (t of themes; track t.id) {
+            <button type="button" class="spark-theme-card" [class.active]="currentSlide().themeId === t.id" [style.background]="t.background" (click)="applyTheme(t)">
+              <span class="spark-theme-title" [style.color]="t.titleColor" [style.font-family]="t.titleFont">Titel</span>
+              <span class="spark-theme-body" [style.color]="t.bodyColor" [style.font-family]="t.bodyFont">Text Body</span>
+              <span class="spark-theme-name">{{ t.name }}</span>
+            </button>
+          }
+        </div>
+        <div class="spark-panel-actions">
+          <button type="button" class="spark-panel-btn" (click)="applyTheme(themes[0], true)">Auf alle Folien anwenden (Clean)</button>
+        </div>
+      </div>
+    } @else if (openPanel() === 'transitions') {
+      <div class="spark-panel">
+        <div class="spark-panel-head">
+          <strong>Übergang dieser Folie</strong>
+          <button type="button" class="spark-panel-close" (click)="closePanels()" aria-label="Schließen">×</button>
+        </div>
+        <div class="spark-transition-list">
+          @for (t of transitions; track t.id) {
+            <button type="button" class="spark-transition-btn" [class.active]="(currentSlide().transition ?? 'fade') === t.id" (click)="setTransition(t.id)">{{ t.label }}</button>
+          }
+        </div>
+        <div class="spark-panel-actions">
+          <button type="button" class="spark-panel-btn" (click)="setTransition(currentSlide().transition ?? 'fade', true)">Auf alle Folien anwenden</button>
+        </div>
+      </div>
+    } @else if (openPanel() === 'symbols') {
+      <div class="spark-panel">
+        <div class="spark-panel-head">
+          <div class="spark-symbol-tabs">
+            <button type="button" [class.active]="symbolTab() === 'pictograms'" (click)="symbolTab.set('pictograms')">Piktogramme</button>
+            <button type="button" [class.active]="symbolTab() === 'math'" (click)="symbolTab.set('math')">Symbole</button>
+            <button type="button" [class.active]="symbolTab() === 'currencies'" (click)="symbolTab.set('currencies')">Währungen</button>
+          </div>
+          <button type="button" class="spark-panel-close" (click)="closePanels()" aria-label="Schließen">×</button>
+        </div>
+        @if (symbolTab() === 'pictograms') {
+          <div class="spark-glyph-grid">
+            @for (g of pictograms; track g) {
+              <button type="button" class="spark-glyph-btn" (click)="insertGlyph(g)">{{ g }}</button>
+            }
+          </div>
+        } @else if (symbolTab() === 'math') {
+          <div class="spark-glyph-grid">
+            @for (g of mathSymbols; track g) {
+              <button type="button" class="spark-glyph-btn" (click)="insertGlyph(g)">{{ g }}</button>
+            }
+          </div>
+        } @else {
+          <div class="spark-currency-grid">
+            @for (c of currencies; track c.code) {
+              <button type="button" class="spark-currency-btn" (click)="insertCurrency(c.code, c.symbol)">
+                <span class="spark-currency-symbol">{{ c.symbol }}</span>
+                <span class="spark-currency-code">{{ c.code }}</span>
+                <span class="spark-currency-name">{{ c.name }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
 
     <!-- ===== Main: sidebar + canvas ===== -->
     <div class="spark-main">
@@ -247,7 +364,92 @@
                   [style.text-align]="el.align"
                   (dblclick)="startEditingElement(el.id, $event)"
                   (input)="updateElementText(el.id, $any($event.target).innerText)"
-                  (blur)="editingElementId.set(null)">{{ el.text }}</div>
+                  (blur)="editingElementId.set(null)">{{ editingElementId() === el.id ? el.text : formatBulletText(el.text, el.bulletStyle) }}</div>
+              } @else if (el.type === 'icon') {
+                <div
+                  class="spark-element-icon"
+                  [style.font-size.px]="el.fontSize ?? 64"
+                  [style.color]="el.color"
+                  [style.text-align]="el.align ?? 'center'">{{ el.iconChar }}</div>
+              } @else if (el.type === 'table') {
+                <table class="spark-element-table" (dblclick)="startEditingElement(el.id, $event)" [style.font-size.px]="el.fontSize" [style.color]="el.color">
+                  @for (row of (el.tableRows ?? []); track $index; let ri = $index) {
+                    <tr [class.spark-table-header-row]="el.tableHeader && ri === 0">
+                      @for (cell of row; track $index; let ci = $index) {
+                        <td>
+                          @if (editingElementId() === el.id) {
+                            <input type="text" [value]="cell" (input)="patchTableCell(el.id, ri, ci, $any($event.target).value)" (click)="$event.stopPropagation()">
+                          } @else {
+                            {{ cell }}
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </table>
+                @if (selectedElementId() === el.id && editingElementId() === el.id) {
+                  <div class="spark-table-ops" (click)="$event.stopPropagation()">
+                    <button type="button" (click)="addTableRow(el.id)" title="+Zeile">+R</button>
+                    <button type="button" (click)="removeTableRow(el.id)" title="-Zeile">-R</button>
+                    <button type="button" (click)="addTableCol(el.id)" title="+Spalte">+C</button>
+                    <button type="button" (click)="removeTableCol(el.id)" title="-Spalte">-C</button>
+                  </div>
+                }
+              } @else if (el.type === 'chart') {
+                <div class="spark-element-chart" (dblclick)="startEditingElement(el.id, $event)">
+                  @if (el.chartType === 'pie') {
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="spark-chart-svg">
+                      @for (seg of chartPieSegments(el); track $index) {
+                        <path [attr.d]="seg.d" [attr.fill]="seg.color" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/>
+                      }
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 200 120" preserveAspectRatio="none" class="spark-chart-svg">
+                      <line x1="20" y1="100" x2="195" y2="100" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+                      <line x1="20" y1="10" x2="20" y2="100" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+                      @for (d of (el.chartData ?? []); track $index; let i = $index) {
+                        <rect
+                          [attr.x]="22 + i * (170 / (el.chartData?.length || 1))"
+                          [attr.y]="100 - d.value * 0.85"
+                          [attr.width]="(170 / (el.chartData?.length || 1)) * 0.7"
+                          [attr.height]="d.value * 0.85"
+                          [attr.fill]="['#FB542B','#FA7250','#7c5fff','#5db4ff','#2E8B7B','#FFB45A','#E84A8C','#9F7FE0'][i % 8]"/>
+                        <text
+                          [attr.x]="22 + i * (170 / (el.chartData?.length || 1)) + (170 / (el.chartData?.length || 1)) * 0.35"
+                          y="113"
+                          text-anchor="middle"
+                          font-size="6"
+                          [attr.fill]="el.color">{{ d.label }}</text>
+                      }
+                    </svg>
+                  }
+                  @if (editingElementId() === el.id) {
+                    <div class="spark-chart-editor" (click)="$event.stopPropagation()" (pointerdown)="$event.stopPropagation()">
+                      <div class="spark-chart-type-row">
+                        <button type="button" [class.active]="el.chartType === 'bar'" (click)="setChartType(el.id, 'bar')">Balken</button>
+                        <button type="button" [class.active]="el.chartType === 'pie'" (click)="setChartType(el.id, 'pie')">Torte</button>
+                      </div>
+                      @for (d of (el.chartData ?? []); track $index; let i = $index) {
+                        <div class="spark-chart-row">
+                          <input type="text" [value]="d.label" (input)="patchChartDataPoint(el.id, i, $any($event.target).value, d.value)" placeholder="Label">
+                          <input type="number" [value]="d.value" (input)="patchChartDataPoint(el.id, i, d.label, +$any($event.target).value)">
+                          <button type="button" (click)="removeChartPoint(el.id, i)" aria-label="Remove">×</button>
+                        </div>
+                      }
+                      <button type="button" class="spark-chart-add" (click)="addChartPoint(el.id)">+ Wert</button>
+                    </div>
+                  }
+                </div>
+              } @else if (el.type === 'calc') {
+                <div class="spark-element-calc" (dblclick)="startEditingElement(el.id, $event)" [style.color]="el.color" [style.font-size.px]="el.fontSize">
+                  @if (editingElementId() === el.id) {
+                    <input type="text" class="spark-calc-input" [value]="el.calcExpr" (input)="patchCalcExpr(el.id, $any($event.target).value)" (click)="$event.stopPropagation()" placeholder="z. B. 2*(3+4)">
+                  } @else {
+                    <span class="spark-calc-expr">{{ el.calcExpr }}</span>
+                  }
+                  <span class="spark-calc-eq">=</span>
+                  <span class="spark-calc-result">{{ calcResult(el.calcExpr) || '?' }}</span>
+                </div>
               } @else if (el.type === 'rect') {
                 <div class="spark-shape" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
               } @else if (el.type === 'ellipse') {
@@ -330,7 +532,10 @@
   } @else {
     <!-- ===== Present mode ===== -->
     <div class="spark-present-stage" (click)="nextSlide()">
-      <div class="spark-present-slide" [style.background]="currentSlide().background">
+      <div class="spark-present-slide"
+        [style.background]="currentSlide().background"
+        [attr.data-transition]="currentSlide().transition ?? 'fade'"
+        [attr.data-slide-key]="currentSlide().id + '-' + currentIndex()">
         @for (el of slideElements(); track el.id) {
           <div
             class="spark-element spark-element-present"
@@ -348,7 +553,55 @@
                 [style.font-style]="el.italic ? 'italic' : 'normal'"
                 [style.text-decoration]="el.underline ? 'underline' : 'none'"
                 [style.color]="el.color"
-                [style.text-align]="el.align">{{ el.text }}</div>
+                [style.text-align]="el.align">{{ formatBulletText(el.text, el.bulletStyle) }}</div>
+            } @else if (el.type === 'icon') {
+              <div class="spark-element-icon"
+                [style.font-size.px]="el.fontSize ?? 64"
+                [style.color]="el.color"
+                [style.text-align]="el.align ?? 'center'">{{ el.iconChar }}</div>
+            } @else if (el.type === 'table') {
+              <table class="spark-element-table" [style.font-size.px]="el.fontSize" [style.color]="el.color">
+                @for (row of (el.tableRows ?? []); track $index; let ri = $index) {
+                  <tr [class.spark-table-header-row]="el.tableHeader && ri === 0">
+                    @for (cell of row; track $index) { <td>{{ cell }}</td> }
+                  </tr>
+                }
+              </table>
+            } @else if (el.type === 'chart') {
+              <div class="spark-element-chart">
+                @if (el.chartType === 'pie') {
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="spark-chart-svg">
+                    @for (seg of chartPieSegments(el); track $index) {
+                      <path [attr.d]="seg.d" [attr.fill]="seg.color" stroke="rgba(255,255,255,0.4)" stroke-width="0.5"/>
+                    }
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 200 120" preserveAspectRatio="none" class="spark-chart-svg">
+                    <line x1="20" y1="100" x2="195" y2="100" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+                    <line x1="20" y1="10" x2="20" y2="100" stroke="currentColor" stroke-width="0.6" opacity="0.4"/>
+                    @for (d of (el.chartData ?? []); track $index; let i = $index) {
+                      <rect
+                        [attr.x]="22 + i * (170 / (el.chartData?.length || 1))"
+                        [attr.y]="100 - d.value * 0.85"
+                        [attr.width]="(170 / (el.chartData?.length || 1)) * 0.7"
+                        [attr.height]="d.value * 0.85"
+                        [attr.fill]="['#FB542B','#FA7250','#7c5fff','#5db4ff','#2E8B7B','#FFB45A','#E84A8C','#9F7FE0'][i % 8]"/>
+                      <text
+                        [attr.x]="22 + i * (170 / (el.chartData?.length || 1)) + (170 / (el.chartData?.length || 1)) * 0.35"
+                        y="113"
+                        text-anchor="middle"
+                        font-size="6"
+                        [attr.fill]="el.color">{{ d.label }}</text>
+                    }
+                  </svg>
+                }
+              </div>
+            } @else if (el.type === 'calc') {
+              <div class="spark-element-calc" [style.color]="el.color" [style.font-size.px]="el.fontSize">
+                <span class="spark-calc-expr">{{ el.calcExpr }}</span>
+                <span class="spark-calc-eq">=</span>
+                <span class="spark-calc-result">{{ calcResult(el.calcExpr) || '?' }}</span>
+              </div>
             } @else if (el.type === 'rect') {
               <div class="spark-shape" [style.background]="el.fill" [style.border]="(el.strokeWidth ?? 0) > 0 ? (el.strokeWidth + 'px solid ' + el.stroke) : 'none'"></div>
             } @else if (el.type === 'ellipse') {
@@ -380,7 +633,7 @@
           [style.text-decoration]="currentSlide().title.underline ? 'underline' : 'none'"
           [style.color]="currentSlide().title.color"
           [style.text-align]="currentSlide().title.align"
-          [textContent]="currentSlide().title.text"></div>
+          [textContent]="formatBulletText(currentSlide().title.text, currentSlide().title.bulletStyle)"></div>
         <div
           class="spark-region spark-region-body"
           [style.font-family]="currentSlide().body.fontFamily"
@@ -390,7 +643,7 @@
           [style.text-decoration]="currentSlide().body.underline ? 'underline' : 'none'"
           [style.color]="currentSlide().body.color"
           [style.text-align]="currentSlide().body.align"
-          [textContent]="currentSlide().body.text"></div>
+          [textContent]="formatBulletText(currentSlide().body.text, currentSlide().body.bulletStyle)"></div>
       </div>
       <div class="spark-present-bar" (click)="$event.stopPropagation()">
         <button type="button" class="spark-icon-btn" (click)="prevSlide()" [disabled]="currentIndex() === 0" aria-label="Previous">

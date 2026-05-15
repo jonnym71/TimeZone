@@ -12,7 +12,37 @@ export interface UserState {
 
 const STORAGE_KEY = 'tz-user-state';
 const PENDING_GIFTS_KEY = 'tz-pending-gifts';
+const INTERNAL_EMAIL_REGISTRY_KEY = 'tz-internal-emails';
+export const INTERNAL_EMAIL_DOMAIN = 'timezone.com';
 export const NAME_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+/** Reduziert einen Namen auf die für eine E-Mail erlaubte Form: lowercase, nur a-z/0-9/punkt. */
+export function slugifyForEmail(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')   // strip diacritics (ä → a)
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '.')
+    .replace(/^\.+|\.+$/g, '')
+    .slice(0, 32);
+}
+
+export function buildInternalEmail(username: string): string {
+  const slug = slugifyForEmail(username);
+  return (slug || 'user') + '@' + INTERNAL_EMAIL_DOMAIN;
+}
+
+/** Persistente Registry aller schon vergebenen internalEmails → echte Email. */
+function loadRegistry(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(INTERNAL_EMAIL_REGISTRY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+function persistRegistry(map: Record<string, string>): void {
+  try { localStorage.setItem(INTERNAL_EMAIL_REGISTRY_KEY, JSON.stringify(map)); } catch {}
+}
 
 const ADMIN_EMAILS = ['lorenz.mauerhofer@outlook.com', 'jakisimfin@gmail.com', 'jaksimfin@gmail.com', 'samuel.allmer@outlook.com', 'markusallmer79@gmail.com'];
 
@@ -98,6 +128,46 @@ export class AuthService {
     const s = this.stateSignal();
     return s !== null && ADMIN_EMAILS.includes(s.email.toLowerCase());
   });
+  /** TIME-ZONE-interne Mail des aktuellen Users (name@timezone.com). */
+  readonly internalEmail = computed(() => {
+    const s = this.stateSignal();
+    return s ? buildInternalEmail(s.username) : '';
+  });
+
+  /** Prüft, ob ein gewünschter Username (→ internalEmail) bereits von jemand anderem belegt ist. */
+  isInternalEmailTaken(candidateUsername: string): boolean {
+    const current = this.stateSignal();
+    return this.isInternalEmailTakenForOther(candidateUsername, current?.email ?? '');
+  }
+
+  /** Wie isInternalEmailTaken, aber prüft gegen die übergebene "eigene" reale Email. */
+  isInternalEmailTakenForOther(candidateUsername: string, myEmail: string): boolean {
+    const slug = slugifyForEmail(candidateUsername);
+    if (!slug) return false;
+    const internal = buildInternalEmail(candidateUsername);
+    const registry = loadRegistry();
+    const owner = registry[internal];
+    if (!owner) return false;
+    return owner.toLowerCase() !== myEmail.toLowerCase();
+  }
+
+  /** Reserviert die internalEmail für die übergebene reale Email (idempotent). */
+  private claimInternalEmail(username: string, realEmail: string): void {
+    const internal = buildInternalEmail(username);
+    const registry = loadRegistry();
+    registry[internal] = realEmail.toLowerCase();
+    persistRegistry(registry);
+  }
+
+  /** Gibt die alte internalEmail frei (für name change / logout). */
+  private releaseInternalEmail(username: string, realEmail: string): void {
+    const internal = buildInternalEmail(username);
+    const registry = loadRegistry();
+    if (registry[internal] && registry[internal].toLowerCase() === realEmail.toLowerCase()) {
+      delete registry[internal];
+      persistRegistry(registry);
+    }
+  }
 
   constructor() {
     // On app startup, claim any pending remote gifts for the already-logged-in user
@@ -152,6 +222,19 @@ export class AuthService {
 
     const localClaimed = this.claimLocalPendingGiftsFor(email);
     state.credit = (state.credit ?? 0) + localClaimed;
+
+    // Falls der initial gewählte Username schon (von jemand anderem) belegt ist,
+    // hänge eine kurze Disambiguierungs-Suffix an, bis er frei ist.
+    if (this.isInternalEmailTaken(state.username)) {
+      let attempt = state.username;
+      let n = 2;
+      while (this.isInternalEmailTakenForOther(attempt, email) && n < 100) {
+        attempt = `${state.username}${n}`;
+        n++;
+      }
+      state.username = attempt;
+    }
+    this.claimInternalEmail(state.username, email);
 
     persistState(state);
     this.stateSignal.set(state);
@@ -269,6 +352,8 @@ export class AuthService {
   }
 
   logout(): void {
+    const current = this.stateSignal();
+    if (current) this.releaseInternalEmail(current.username, current.email);
     persistState(null);
     this.stateSignal.set(null);
   }
@@ -287,7 +372,13 @@ export class AuthService {
     if (current.nameLastChanged && Date.now() - current.nameLastChanged < NAME_COOLDOWN_MS) {
       return false;
     }
-    this.updateState({ username: newName, nameLastChanged: Date.now() });
+    const trimmed = newName.trim();
+    if (!trimmed) return false;
+    if (this.isInternalEmailTakenForOther(trimmed, current.email)) return false;
+    // Registry: alte internalEmail freigeben, neue reservieren
+    this.releaseInternalEmail(current.username, current.email);
+    this.claimInternalEmail(trimmed, current.email);
+    this.updateState({ username: trimmed, nameLastChanged: Date.now() });
     return true;
   }
 

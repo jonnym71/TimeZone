@@ -1,5 +1,6 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostBinding, HostListener, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TranslatePipe } from './pipes/translate.pipe';
 import { NavbarComponent } from './shared/navbar/navbar.component';
 import { FooterComponent } from './shared/footer/footer.component';
 import { ComingSoonOverlayComponent } from './shared/coming-soon-overlay/coming-soon-overlay.component';
@@ -26,6 +27,7 @@ import { OverlayService } from './services/overlay.service';
   standalone: true,
   imports: [
     RouterOutlet,
+    TranslatePipe,
     NavbarComponent,
     FooterComponent,
     ComingSoonOverlayComponent,
@@ -51,6 +53,25 @@ import { OverlayService } from './services/overlay.service';
 })
 export class App {
   private overlay = inject(OverlayService);
+
+  private static readonly DISCLAIMER_KEY = 'tz-disclaimer-dismissed-v1';
+  readonly disclaimerVisible = signal<boolean>(this.loadDisclaimer());
+
+  @HostBinding('style.--disclaimer-h') get disclaimerHeightVar(): string {
+    return this.disclaimerVisible() ? '36px' : '0px';
+  }
+  @HostBinding('class.has-disclaimer') get hasDisclaimer(): boolean {
+    return this.disclaimerVisible();
+  }
+
+  private loadDisclaimer(): boolean {
+    try { return localStorage.getItem(App.DISCLAIMER_KEY) !== '1'; } catch { return true; }
+  }
+
+  dismissDisclaimer(): void {
+    this.disclaimerVisible.set(false);
+    try { localStorage.setItem(App.DISCLAIMER_KEY, '1'); } catch {}
+  }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {

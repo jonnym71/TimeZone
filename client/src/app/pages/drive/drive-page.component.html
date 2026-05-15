@@ -5,9 +5,16 @@
     </button>
     <div class="spark-brand drive-brand">
       <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M3 9a2 2 0 0 1 2-2h7l3 3h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#9E2B0E" stroke-width="2" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="brandGrad-drive" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c5fff"/>
+            <stop offset="50%" stop-color="#6b80ff"/>
+            <stop offset="100%" stop-color="#5db4ff"/>
+          </linearGradient>
+        </defs>
+        <path d="M3 9 a2 2 0 0 1 2 -2 H12 L15 10 H27 a2 2 0 0 1 2 2 V25 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 Z" fill="none" stroke="url(#brandGrad-drive)" stroke-width="2" stroke-linejoin="round"/>
       </svg>
-      <span>DRIVE</span>
+      <span>Novix</span>
     </div>
     <div class="drive-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>

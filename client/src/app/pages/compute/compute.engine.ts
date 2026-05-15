@@ -24,30 +24,108 @@ const CONSTANTS: Record<string, number> = {
 };
 
 const FUNCTIONS: Record<string, (args: number[], mode: AngleMode) => number> = {
+  // ---- Trigonometrie ----
   sin:   ([x], m) => Math.sin(toRad(x, m)),
   cos:   ([x], m) => Math.cos(toRad(x, m)),
   tan:   ([x], m) => Math.tan(toRad(x, m)),
+  sec:   ([x], m) => 1 / Math.cos(toRad(x, m)),
+  csc:   ([x], m) => 1 / Math.sin(toRad(x, m)),
+  cot:   ([x], m) => 1 / Math.tan(toRad(x, m)),
   asin:  ([x], m) => fromRad(Math.asin(x), m),
   acos:  ([x], m) => fromRad(Math.acos(x), m),
   atan:  ([x], m) => fromRad(Math.atan(x), m),
+  atan2: ([y, x], m) => fromRad(Math.atan2(y, x), m),
   sinh:  ([x]) => Math.sinh(x),
   cosh:  ([x]) => Math.cosh(x),
   tanh:  ([x]) => Math.tanh(x),
+  // ---- Logarithmen ----
   ln:    ([x]) => Math.log(x),
-  log:   ([x]) => Math.log10(x),
+  // log(x) = log10, log(base, x) = beliebige Basis
+  log:   (args) => args.length === 1 ? Math.log10(args[0]) : Math.log(args[1]) / Math.log(args[0]),
+  log10: ([x]) => Math.log10(x),
   log2:  ([x]) => Math.log2(x),
+  logb:  ([base, x]) => Math.log(x) / Math.log(base),
+  // ---- Wurzeln / Potenzen ----
   sqrt:  ([x]) => Math.sqrt(x),
   cbrt:  ([x]) => Math.cbrt(x),
+  root:  ([n, x]) => Math.sign(x) * Math.pow(Math.abs(x), 1 / n),
+  pow:   ([a, b]) => Math.pow(a, b),
+  exp:   ([x]) => Math.exp(x),
+  // ---- Rundung / Vorzeichen ----
   abs:   ([x]) => Math.abs(x),
   floor: ([x]) => Math.floor(x),
   ceil:  ([x]) => Math.ceil(x),
   round: ([x]) => Math.round(x),
-  exp:   ([x]) => Math.exp(x),
+  trunc: ([x]) => Math.trunc(x),
+  sign:  ([x]) => Math.sign(x),
+  // ---- Diverse ----
   min:   args => Math.min(...args),
   max:   args => Math.max(...args),
-  pow:   ([a, b]) => Math.pow(a, b),
   mod:   ([a, b]) => a - b * Math.floor(a / b),
+  random:() => Math.random(),
+  // ---- Geometrie / Distanz ----
+  hypot: args => Math.hypot(...args),                                          // Pythagoras: sqrt(a²+b²+…)
+  dist:  ([x1, y1, x2, y2]) => Math.hypot(x2 - x1, y2 - y1),                    // Punktdistanz 2D
+  // ---- Kreis ----
+  area:  ([r]) => Math.PI * r * r,                                              // Kreisfläche
+  circ:  ([r]) => 2 * Math.PI * r,                                              // Kreisumfang
+  // ---- Zahlentheorie ----
+  gcd:   args => args.reduce((a, b) => intGcd(Math.abs(a), Math.abs(b))),
+  lcm:   args => args.reduce((a, b) => Math.abs(a * b) / (intGcd(Math.abs(a), Math.abs(b)) || 1)),
+  // ---- Kombinatorik ----
+  ncr:   ([n, r]) => binomial(n, r),
+  npr:   ([n, r]) => permutations(n, r),
+  // ---- Quadratische Gleichung ax²+bx+c=0 ----
+  quadp: ([a, b, c]) => (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a),           // +Lösung
+  quadm: ([a, b, c]) => (-b - Math.sqrt(b * b - 4 * a * c)) / (2 * a),           // −Lösung
+  disc:  ([a, b, c]) => b * b - 4 * a * c,                                      // Diskriminante
+  // ---- Lineare Gleichung ax+b=0 ----
+  linsolve: ([a, b]) => -b / a,
+  // ---- Statistik ----
+  sum:   args => args.reduce((a, b) => a + b, 0),
+  mean:  args => args.reduce((a, b) => a + b, 0) / args.length,
+  avg:   args => args.reduce((a, b) => a + b, 0) / args.length,
+  median:args => {
+    const s = [...args].sort((a, b) => a - b);
+    const n = s.length;
+    return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2;
+  },
+  variance: args => {
+    const m = args.reduce((a, b) => a + b, 0) / args.length;
+    return args.reduce((a, b) => a + (b - m) ** 2, 0) / args.length;
+  },
+  sd:    args => {
+    const m = args.reduce((a, b) => a + b, 0) / args.length;
+    return Math.sqrt(args.reduce((a, b) => a + (b - m) ** 2, 0) / args.length);
+  },
+  // ---- Prozent ----
+  pct:    ([p, of]) => (p / 100) * of,         // p% von of
+  pctof:  ([part, whole]) => (part / whole) * 100,  // wieviel % ist part von whole
+  // ---- Zins / Wachstum ----
+  compound:([p, r, n]) => p * Math.pow(1 + r / 100, n),  // Zinseszins: Kapital, %Zins, Jahre
 };
+
+function intGcd(a: number, b: number): number {
+  a = Math.floor(a); b = Math.floor(b);
+  while (b) { [a, b] = [b, a % b]; }
+  return a;
+}
+
+function binomial(n: number, r: number): number {
+  if (r < 0 || r > n) return 0;
+  if (r === 0 || r === n) return 1;
+  r = Math.min(r, n - r);
+  let res = 1;
+  for (let i = 0; i < r; i++) res = (res * (n - i)) / (i + 1);
+  return Math.round(res);
+}
+
+function permutations(n: number, r: number): number {
+  if (r < 0 || r > n) return 0;
+  let res = 1;
+  for (let i = 0; i < r; i++) res *= (n - i);
+  return res;
+}
 
 const FUNC_NAMES = new Set(Object.keys(FUNCTIONS));
 

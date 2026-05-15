@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Invoke-WebRequest -Uri \"https://i.pinimg.com/originals/11/b9/bc/11b9bc76763e9e07b3af0353c8c4edfb.jpg\" -OutFile \"public\\\\transat-bg.jpg\" -UseBasicParsing; \\(Get-Item \"public\\\\transat-bg.jpg\"\\).Length)"
+    ]
+  }
+}

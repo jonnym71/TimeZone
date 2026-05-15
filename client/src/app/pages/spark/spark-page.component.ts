@@ -3,20 +3,30 @@ import { FormsModule } from '@angular/forms';
 import { OverlayService } from '../../services/overlay.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import {
+  BulletStyle,
+  ChartType,
   createDoc,
   createSlide,
+  CURRENCIES,
   ElementType,
   FONT_OPTIONS,
   FONT_SIZE_OPTIONS,
+  MATH_SYMBOLS,
   makeElement,
   makeId,
+  PICTOGRAMS,
   SLIDE_BG_PRESETS,
+  SLIDE_THEMES,
+  SLIDE_TRANSITIONS,
   Slide,
   SlideElement,
   SlideRegion,
+  SlideTheme,
+  SlideTransition,
   SparkDoc,
   TextRegion,
 } from './spark.types';
+import { compute } from '../compute/compute.engine';
 
 const STORAGE_KEY = 'tz-spark-doc-v1';
 
@@ -35,6 +45,15 @@ export class SparkPageComponent implements AfterViewInit {
   readonly fontOptions = FONT_OPTIONS;
   readonly fontSizeOptions = FONT_SIZE_OPTIONS;
   readonly bgPresets = SLIDE_BG_PRESETS;
+  readonly themes = SLIDE_THEMES;
+  readonly transitions = SLIDE_TRANSITIONS;
+  readonly pictograms = PICTOGRAMS;
+  readonly mathSymbols = MATH_SYMBOLS;
+  readonly currencies = CURRENCIES;
+
+  /** Welcher Picker-Panel ist gerade offen (Theme, Symbol, Currency)? */
+  readonly openPanel = signal<'none' | 'themes' | 'transitions' | 'symbols' | 'pictograms' | 'currencies'>('none');
+  readonly symbolTab = signal<'pictograms' | 'math' | 'currencies'>('pictograms');
 
   readonly doc = signal<SparkDoc>(this.loadOrCreate());
   readonly currentIndex = signal<number>(0);
@@ -455,8 +474,11 @@ export class SparkPageComponent implements AfterViewInit {
   // ===== Present mode =====
 
   enterPresent(): void {
+    this.currentIndex.set(0);           // Präsentation startet immer auf der ersten Folie
     this.presentMode.set(true);
     this.selectedRegion.set(null);
+    this.selectedElementId.set(null);
+    this.editingElementId.set(null);
   }
 
   exitPresent(): void {
@@ -470,6 +492,192 @@ export class SparkPageComponent implements AfterViewInit {
 
   prevSlide(): void {
     this.currentIndex.update(i => Math.max(i - 1, 0));
+  }
+
+  /* ===== Bullet-Listen ===== */
+  cycleBulletStyleForActive(): void {
+    const region = this.selectedRegion();
+    const elId = this.selectedElementId();
+    const order: BulletStyle[] = ['none', 'bullet', 'number'];
+    const next = (cur: BulletStyle | undefined): BulletStyle => order[(order.indexOf(cur ?? 'none') + 1) % order.length];
+    if (region) {
+      const cur = this.activeRegion()?.bulletStyle ?? 'none';
+      this.patchActive({ bulletStyle: next(cur) });
+    } else if (elId) {
+      const el = this.selectedElement();
+      if (el?.type === 'text') this.patchElement(elId, { bulletStyle: next(el.bulletStyle) });
+    }
+  }
+
+  /** Render-Helfer: nimmt mehrzeiligen Text + bulletStyle und gibt jede Zeile mit Prefix. */
+  formatBulletText(text: string | undefined, style: BulletStyle | undefined): string {
+    if (!text) return '';
+    if (!style || style === 'none') return text;
+    const lines = text.split('\n');
+    if (style === 'bullet') return lines.map(l => l.trim() ? `• ${l}` : l).join('\n');
+    // number
+    let n = 0;
+    return lines.map(l => l.trim() ? `${++n}. ${l}` : l).join('\n');
+  }
+
+  /* ===== Themes / Entwurf ===== */
+  togglePanel(panel: 'themes' | 'transitions' | 'symbols' | 'pictograms' | 'currencies'): void {
+    this.openPanel.update(cur => cur === panel ? 'none' : panel);
+  }
+  closePanels(): void { this.openPanel.set('none'); }
+
+  applyTheme(theme: SlideTheme, toAll = false): void {
+    const apply = (s: Slide): Slide => ({
+      ...s,
+      background: theme.background,
+      themeId: theme.id,
+      title: { ...s.title, fontFamily: theme.titleFont, color: theme.titleColor, bold: theme.titleBold },
+      body:  { ...s.body,  fontFamily: theme.bodyFont,  color: theme.bodyColor },
+    });
+    if (toAll) {
+      this.doc.update(d => ({ ...d, slides: d.slides.map(apply) }));
+    } else {
+      const idx = this.currentIndex();
+      this.doc.update(d => ({ ...d, slides: d.slides.map((s, i) => i === idx ? apply(s) : s) }));
+    }
+    this.closePanels();
+  }
+
+  /* ===== Übergänge ===== */
+  setTransition(t: SlideTransition, toAll = false): void {
+    if (toAll) {
+      this.doc.update(d => ({ ...d, slides: d.slides.map(s => ({ ...s, transition: t })) }));
+    } else {
+      const idx = this.currentIndex();
+      this.doc.update(d => ({ ...d, slides: d.slides.map((s, i) => i === idx ? { ...s, transition: t } : s) }));
+    }
+    this.closePanels();
+  }
+
+  /* ===== Special-Char Insert: Pictogram / Symbol / Currency → fügt Text-Element ein ===== */
+  insertGlyph(glyph: string): void {
+    const slide = this.currentSlide();
+    if (!slide) return;
+    const existing = slide.elements ?? [];
+    const maxZ = existing.reduce((m, e) => Math.max(m, e.zIndex), 0);
+    const el = makeElement('icon', { iconChar: glyph, zIndex: maxZ + 1, x: 40, y: 38, w: 14, h: 18 });
+    this.updateSlideElements([...existing, el]);
+    this.selectedElementId.set(el.id);
+    this.selectedRegion.set(null);
+    this.closePanels();
+  }
+
+  insertCurrency(code: string, symbol: string): void {
+    const slide = this.currentSlide();
+    if (!slide) return;
+    const existing = slide.elements ?? [];
+    const maxZ = existing.reduce((m, e) => Math.max(m, e.zIndex), 0);
+    const el = makeElement('text', {
+      text: `${symbol} 100,00 ${code}`,
+      zIndex: maxZ + 1,
+      x: 35, y: 40,
+      w: 30, h: 10,
+      fontSize: 32, bold: true,
+      color: this.currentSlide()?.title.color ?? '#1a1410',
+    });
+    this.updateSlideElements([...existing, el]);
+    this.selectedElementId.set(el.id);
+    this.selectedRegion.set(null);
+    this.closePanels();
+  }
+
+  /* ===== Tabelle ===== */
+  insertTable(): void { this.addElement('table'); }
+
+  patchTableCell(elId: string, row: number, col: number, value: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'table' || !el.tableRows) return;
+    const rows = el.tableRows.map((r, ri) => r.map((c, ci) => (ri === row && ci === col) ? value : c));
+    this.patchElement(elId, { tableRows: rows });
+  }
+
+  addTableRow(elId: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'table' || !el.tableRows) return;
+    const colCount = el.tableRows[0]?.length ?? 3;
+    const newRow = Array.from({ length: colCount }, () => '');
+    this.patchElement(elId, { tableRows: [...el.tableRows, newRow] });
+  }
+
+  addTableCol(elId: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'table' || !el.tableRows) return;
+    const rows = el.tableRows.map(r => [...r, '']);
+    this.patchElement(elId, { tableRows: rows });
+  }
+
+  removeTableRow(elId: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'table' || !el.tableRows || el.tableRows.length <= 1) return;
+    this.patchElement(elId, { tableRows: el.tableRows.slice(0, -1) });
+  }
+
+  removeTableCol(elId: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'table' || !el.tableRows || (el.tableRows[0]?.length ?? 0) <= 1) return;
+    this.patchElement(elId, { tableRows: el.tableRows.map(r => r.slice(0, -1)) });
+  }
+
+  /* ===== Diagramm ===== */
+  insertChart(): void { this.addElement('chart'); }
+
+  setChartType(elId: string, t: ChartType): void { this.patchElement(elId, { chartType: t }); }
+
+  patchChartDataPoint(elId: string, idx: number, label: string, value: number): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'chart' || !el.chartData) return;
+    const data = el.chartData.map((d, i) => i === idx ? { label, value } : d);
+    this.patchElement(elId, { chartData: data });
+  }
+
+  addChartPoint(elId: string): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'chart') return;
+    const data = [...(el.chartData ?? []), { label: 'Neu', value: 10 }];
+    this.patchElement(elId, { chartData: data });
+  }
+
+  removeChartPoint(elId: string, idx: number): void {
+    const el = this.slideElements().find(e => e.id === elId);
+    if (!el || el.type !== 'chart' || !el.chartData || el.chartData.length <= 1) return;
+    this.patchElement(elId, { chartData: el.chartData.filter((_, i) => i !== idx) });
+  }
+
+  /** SVG-Pfad-Daten für ein Tortendiagramm-Segment. */
+  chartPieSegments(el: SlideElement): { d: string; color: string; label: string; value: number }[] {
+    const data = el.chartData ?? [];
+    const total = data.reduce((s, d) => s + Math.max(0, d.value), 0) || 1;
+    const PALETTE = ['#FB542B', '#FA7250', '#7c5fff', '#5db4ff', '#2E8B7B', '#FFB45A', '#E84A8C', '#9F7FE0'];
+    let angle = -Math.PI / 2;
+    return data.map((d, i) => {
+      const slice = (Math.max(0, d.value) / total) * Math.PI * 2;
+      const x1 = 50 + 45 * Math.cos(angle);
+      const y1 = 50 + 45 * Math.sin(angle);
+      const x2 = 50 + 45 * Math.cos(angle + slice);
+      const y2 = 50 + 45 * Math.sin(angle + slice);
+      const large = slice > Math.PI ? 1 : 0;
+      const path = `M 50 50 L ${x1.toFixed(2)} ${y1.toFixed(2)} A 45 45 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+      angle += slice;
+      return { d: path, color: PALETTE[i % PALETTE.length], label: d.label, value: d.value };
+    });
+  }
+
+  /* ===== Rechner-Element ===== */
+  insertCalc(): void { this.addElement('calc'); }
+
+  calcResult(expr: string | undefined): string {
+    if (!expr || !expr.trim()) return '';
+    const r = compute(expr, {}, 'rad');
+    return r.ok ? (r.formatted ?? '') : '';
+  }
+
+  patchCalcExpr(elId: string, expr: string): void {
+    this.patchElement(elId, { calcExpr: expr });
   }
 
   // ===== Reset =====

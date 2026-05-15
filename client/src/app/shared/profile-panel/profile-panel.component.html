@@ -53,37 +53,25 @@
       @if (isAdmin()) {
         <span class="admin-badge">★ {{ 'profile.adminBadge' | t }}</span>
       }
-      <button
-        class="icon-btn"
-        type="button"
-        [attr.aria-label]="'profile.changeName' | t"
-        [attr.title]="'profile.changeName' | t"
-        [disabled]="cooldownActive()"
-        (click)="togglePencil()">✏</button>
     </div>
 
-    <form
-      class="name-edit"
-      [class.open]="nameEditOpen()"
-      autocomplete="off"
-      (submit)="saveName($event)">
-      <input
-        type="text"
-        class="name-input"
-        maxlength="20"
-        [placeholder]="'profile.newName' | t"
-        [ngModel]="nameInput()"
-        (ngModelChange)="nameInput.set($event)"
-        name="name">
-      <button type="submit" class="name-save">{{ 'common.save' | t }}</button>
-    </form>
-
-    <p class="name-cooldown" [class.show]="cooldownActive()">
-      <span class="cooldown-clock" aria-hidden="true">⏰</span>
-      <span>{{ 'profile.cooldownText' | t }} <span>{{ cooldownText() }}</span></span>
-    </p>
-
-    <p class="profile-email">{{ u.email }}</p>
+    <div class="profile-internal-email">
+      <span class="profile-email-value">{{ internalEmail() }}</span>
+      <button
+        type="button"
+        class="profile-email-info-btn"
+        [attr.aria-label]="'profile.emailInfo.title' | t"
+        [attr.title]="'profile.emailInfo.title' | t"
+        (click)="toggleEmailInfo()">i</button>
+      @if (emailInfoOpen()) {
+        <div class="profile-email-info-popover" role="dialog">
+          <strong>{{ 'profile.emailInfo.title' | t }}</strong>
+          <p>{{ 'profile.emailInfo.body' | t }}</p>
+          <p class="profile-email-info-hint">{{ 'profile.emailInfo.manageHint' | t }}</p>
+          <button type="button" class="profile-email-info-close" (click)="closeEmailInfo()">{{ 'common.gotIt' | t }}</button>
+        </div>
+      }
+    </div>
 
     <details class="rank-dropdown">
       <summary>

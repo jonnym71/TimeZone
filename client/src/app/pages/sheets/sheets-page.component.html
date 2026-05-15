@@ -6,10 +6,17 @@
     </button>
     <div class="spark-brand sheets-brand">
       <svg class="spark-logo" viewBox="0 0 32 32" aria-hidden="true">
-        <rect x="3" y="5" width="26" height="22" rx="2" fill="none" stroke="#E83A0B" stroke-width="2"/>
-        <path d="M3 11h26M3 17h26M3 23h26M11 5v22M19 5v22" stroke="#E83A0B" stroke-width="1.5"/>
+        <defs>
+          <linearGradient id="brandGrad-sheets" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c5fff"/>
+            <stop offset="50%" stop-color="#6b80ff"/>
+            <stop offset="100%" stop-color="#5db4ff"/>
+          </linearGradient>
+        </defs>
+        <rect x="3" y="5" width="26" height="22" rx="3" fill="none" stroke="url(#brandGrad-sheets)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M3 11 H29 M3 17 H29 M3 23 H29 M11 5 V27 M19 5 V27" stroke="url(#brandGrad-sheets)" stroke-width="1.5"/>
       </svg>
-      <span>SHEETS</span>
+      <span>Korexa</span>
     </div>
     <div class="spark-actions">
       <label class="spark-icon-btn" [attr.title]="'sheets.import' | t" aria-label="Import CSV">

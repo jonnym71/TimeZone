@@ -3,135 +3,204 @@
     <span class="back-arrow" aria-hidden="true">←</span> {{ 'common.back' | t }}
   </button>
   <div class="buero-content">
-    <div class="buero-status" role="status">
-      <span class="status-led" aria-hidden="true"></span>
-      <span>{{ 'buero.status' | t }}</span>
-      <span class="telemetry-sep" aria-hidden="true"></span>
-      <span>{{ 'buero.tele.node' | t }}: <span class="telemetry-val">TZ-04</span></span>
-      <span class="telemetry-sep" aria-hidden="true"></span>
-      <span>{{ 'buero.tele.build' | t }}: <span class="telemetry-val">v4.7</span></span>
-      <span class="telemetry-sep" aria-hidden="true"></span>
-      <span>{{ 'buero.tele.apps' | t }}: <span class="telemetry-val">6/6</span></span>
-    </div>
-    <h1 class="buero-title">{{ 'buero.title' | t }}</h1>
-    <p class="buero-subtitle">{{ 'buero.subtitle' | t }}</p>
+    <section class="buero-hero">
+      <div class="buero-hero-text">
+        <div class="buero-status" role="status">
+          <span class="status-led" aria-hidden="true"></span>
+          <span>{{ 'buero.status' | t }}</span>
+        </div>
+        <h1 class="buero-title">
+          <span class="buero-title-brand">{{ 'buero.title.brand' | t }}</span>
+          <span class="buero-title-accent">{{ 'buero.title.name' | t }}</span>
+        </h1>
+        <p class="buero-subtitle">{{ 'buero.subtitle' | t }}</p>
+      </div>
+      <div class="buero-hero-art" aria-hidden="true">
+        <div class="buero-art-window">
+          <div class="buero-art-titlebar">
+            <span class="buero-art-dot" style="background:#ff5f57"></span>
+            <span class="buero-art-dot" style="background:#febc2e"></span>
+            <span class="buero-art-dot" style="background:#28c840"></span>
+            <span class="buero-art-url">tz-zone.io/buero</span>
+          </div>
+          <div class="buero-art-canvas">
+            <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <linearGradient id="bueroWave1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#9b8cff" stop-opacity="0.9"/>
+                  <stop offset="60%" stop-color="#c08eff" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#5b3aa7" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="bueroWave2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#9b8cff" stop-opacity="0"/>
+                  <stop offset="50%" stop-color="#e891ff" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#7d5cff" stop-opacity="0"/>
+                </linearGradient>
+                <radialGradient id="bueroOrb" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0%" stop-color="#e891ff" stop-opacity="0.6"/>
+                  <stop offset="60%" stop-color="#9b8cff" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#5b3aa7" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="400" height="240" fill="#0a0a14"/>
+              <circle cx="280" cy="120" r="110" fill="url(#bueroOrb)"/>
+              <!-- Wellenformen -->
+              <g stroke="url(#bueroWave2)" fill="none" stroke-width="1.2" stroke-linecap="round">
+                <path d="M 80 120 Q 120 60 160 120 T 240 120 T 320 120"/>
+                <path d="M 70 120 Q 115 40 165 120 T 245 120 T 325 120" opacity="0.7"/>
+                <path d="M 90 120 Q 130 80 170 120 T 250 120 T 330 120" opacity="0.85"/>
+                <path d="M 60 120 Q 110 30 170 120 T 250 120 T 340 120" opacity="0.55"/>
+                <path d="M 95 120 Q 135 90 175 120 T 255 120 T 335 120" opacity="0.75"/>
+                <path d="M 50 120 Q 105 20 175 120 T 255 120 T 350 120" opacity="0.4"/>
+              </g>
+              <!-- Vertikale Linien wie Spektrum -->
+              <g stroke="#9b8cff" stroke-linecap="round" opacity="0.55">
+                <line x1="290" y1="40"  x2="290" y2="200" stroke-width="1.2"/>
+                <line x1="305" y1="55"  x2="305" y2="185" stroke-width="1.2"/>
+                <line x1="320" y1="70"  x2="320" y2="170" stroke-width="1.2"/>
+                <line x1="335" y1="50"  x2="335" y2="190" stroke-width="1.2"/>
+                <line x1="350" y1="30"  x2="350" y2="210" stroke-width="1.2"/>
+                <line x1="365" y1="65"  x2="365" y2="175" stroke-width="1.2"/>
+                <line x1="275" y1="60"  x2="275" y2="180" stroke-width="1.2"/>
+                <line x1="260" y1="85"  x2="260" y2="155" stroke-width="1.2"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="buero-grid">
-      <!-- PROJECT (Präsentationen) -->
-      <article class="app-tile app-tile-clickable" data-app="project" style="--app-color:#FB542B;--app-glow:251,84,43" tabindex="0" role="button" (click)="openSpark()" (keydown.enter)="openSpark()" (keydown.space)="$event.preventDefault(); openSpark()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- project -->
+      <article class="app-tile app-tile-clickable" data-app="project" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openSpark()" (keydown.enter)="openSpark()" (keydown.space)="$event.preventDefault(); openSpark()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="8" y="4" width="20" height="14" rx="2.5" opacity="0.45"/>
-              <rect x="5" y="7" width="20" height="14" rx="2.5" opacity="0.7"/>
-              <rect x="2" y="10" width="20" height="14" rx="2.5"/>
-              <path d="M14 14 L11 18 H13 L12 22 L16 17 H14 L15 14 Z" fill="currentColor" stroke="none"/>
-              <path d="M12 26v2" opacity="0.7"/>
-              <path d="M9 28h6" opacity="0.7"/>
+            <svg viewBox="0 0 32 32" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <defs>
+                <linearGradient id="appGrad-project" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5fff"/>
+                  <stop offset="50%" stop-color="#6b80ff"/>
+                  <stop offset="100%" stop-color="#5db4ff"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="6" width="24" height="17" rx="2.5" stroke="url(#appGrad-project)" stroke-width="2" fill="none"/>
+              <path d="M14 12 L11 16 H13 L12 19 L17 14 H14 L15 12 Z" fill="url(#appGrad-project)" stroke="none"/>
+              <path d="M12 26 H20" stroke="url(#appGrad-project)" stroke-width="2"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">PROJECT</h2>
+        <h2 class="app-name">Vireon</h2>
         <p class="app-tag">{{ 'buero.app.project' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
 
-      <!-- DOCUMENT (Texte) -->
-      <article class="app-tile app-tile-clickable" data-app="document" style="--app-color:#FA7250;--app-glow:250,114,80" tabindex="0" role="button" (click)="openDocument()" (keydown.enter)="openDocument()" (keydown.space)="$event.preventDefault(); openDocument()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- document -->
+      <article class="app-tile app-tile-clickable" data-app="document" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openDocument()" (keydown.enter)="openDocument()" (keydown.space)="$event.preventDefault(); openDocument()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 3h10l4 4v14H5z"/>
-              <path d="M15 3v4h4"/>
-              <path d="M8 12h8"/>
-              <path d="M8 16h8"/>
-              <path d="M8 20h5"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <defs>
+                <linearGradient id="appGrad-document" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5fff"/>
+                  <stop offset="50%" stop-color="#6b80ff"/>
+                  <stop offset="100%" stop-color="#5db4ff"/>
+                </linearGradient>
+              </defs>
+              <path d="M5 3 H15 L19 7 V21 H5 Z" stroke="url(#appGrad-document)" stroke-width="1.8" fill="none"/>
+              <path d="M15 3 V7 H19" stroke="url(#appGrad-document)" stroke-width="1.8" fill="none"/>
+              <path d="M8 12 H16 M8 16 H16 M8 20 H13" stroke="url(#appGrad-document)" stroke-width="1.8"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">DOCUMENT</h2>
+        <h2 class="app-name">Lunaris</h2>
         <p class="app-tag">{{ 'buero.app.document' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
 
-      <!-- SHEETS (Tabellen) -->
-      <article class="app-tile app-tile-clickable" data-app="sheets" style="--app-color:#E83A0B;--app-glow:232,58,11" tabindex="0" role="button" (click)="openSheets()" (keydown.enter)="openSheets()" (keydown.space)="$event.preventDefault(); openSheets()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- sheets -->
+      <article class="app-tile app-tile-clickable" data-app="sheets" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openSheets()" (keydown.enter)="openSheets()" (keydown.space)="$event.preventDefault(); openSheets()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="16" rx="1.5"/>
-              <path d="M3 9h18"/>
-              <path d="M3 14h18"/>
-              <path d="M9 4v16"/>
-              <path d="M15 4v16"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <defs>
+                <linearGradient id="appGrad-sheets" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5fff"/>
+                  <stop offset="50%" stop-color="#6b80ff"/>
+                  <stop offset="100%" stop-color="#5db4ff"/>
+                </linearGradient>
+              </defs>
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="url(#appGrad-sheets)" stroke-width="1.8" fill="none"/>
+              <path d="M3 9 H21 M3 14 H21 M9 4 V20 M15 4 V20" stroke="url(#appGrad-sheets)" stroke-width="1.8"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">SHEETS</h2>
+        <h2 class="app-name">Korexa</h2>
         <p class="app-tag">{{ 'buero.app.sheets' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
 
-      <!-- INBOX (Mail) -->
-      <article class="app-tile app-tile-clickable" data-app="inbox" style="--app-color:#FFB45A;--app-glow:255,180,90" tabindex="0" role="button" (click)="openInbox()" (keydown.enter)="openInbox()" (keydown.space)="$event.preventDefault(); openInbox()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- privon (Email) -->
+      <article class="app-tile app-tile-clickable" data-app="inbox" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openInbox()" (keydown.enter)="openInbox()" (keydown.space)="$event.preventDefault(); openInbox()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2"/>
-              <path d="M3 7l9 6 9-6"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+              <rect x="3" y="6" width="18" height="13" rx="3"/>
+              <path d="M3 8 L12 15.5 L21 8"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">INBOX</h2>
+        <h2 class="app-name">privon</h2>
         <p class="app-tag">{{ 'buero.app.inbox' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
 
-      <!-- DRIVE (Dokumente / Storage) -->
-      <article class="app-tile app-tile-clickable" data-app="drive" style="--app-color:#9E2B0E;--app-glow:158,43,14" tabindex="0" role="button" (click)="openDrive()" (keydown.enter)="openDrive()" (keydown.space)="$event.preventDefault(); openDrive()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- drive -->
+      <article class="app-tile app-tile-clickable" data-app="drive" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openDrive()" (keydown.enter)="openDrive()" (keydown.space)="$event.preventDefault(); openDrive()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <defs>
+                <linearGradient id="appGrad-drive" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5fff"/>
+                  <stop offset="50%" stop-color="#6b80ff"/>
+                  <stop offset="100%" stop-color="#5db4ff"/>
+                </linearGradient>
+              </defs>
+              <path d="M3 7 a2 2 0 0 1 2 -2 H9 L11 7 H19 a2 2 0 0 1 2 2 v9 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 Z" stroke="url(#appGrad-drive)" stroke-width="1.8" fill="none"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">DRIVE</h2>
+        <h2 class="app-name">Novix</h2>
         <p class="app-tag">{{ 'buero.app.drive' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
 
-      <!-- COMPUTE (Mathe / Rechner) -->
-      <article class="app-tile app-tile-clickable" data-app="compute" style="--app-color:#D26B2F;--app-glow:210,107,47" tabindex="0" role="button" (click)="openCompute()" (keydown.enter)="openCompute()" (keydown.space)="$event.preventDefault(); openCompute()">
-        <div class="app-corner" aria-hidden="true"></div>
+      <!-- compute -->
+      <article class="app-tile app-tile-clickable" data-app="compute" style="--app-color:#7c5fff;--app-glow:124,95,255" tabindex="0" role="button" (click)="openCompute()" (keydown.enter)="openCompute()" (keydown.space)="$event.preventDefault(); openCompute()">
         <div class="app-tile-head">
           <div class="app-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="4" y="3" width="16" height="18" rx="2"/>
-              <rect x="7" y="6" width="10" height="3" rx="0.6"/>
-              <circle cx="8.5" cy="13" r="0.8" fill="currentColor"/>
-              <circle cx="12" cy="13" r="0.8" fill="currentColor"/>
-              <circle cx="15.5" cy="13" r="0.8" fill="currentColor"/>
-              <circle cx="8.5" cy="16.5" r="0.8" fill="currentColor"/>
-              <circle cx="12" cy="16.5" r="0.8" fill="currentColor"/>
-              <circle cx="15.5" cy="16.5" r="0.8" fill="currentColor"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linejoin="round" stroke-linecap="round">
+              <defs>
+                <linearGradient id="appGrad-compute" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c5fff"/>
+                  <stop offset="50%" stop-color="#6b80ff"/>
+                  <stop offset="100%" stop-color="#5db4ff"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="3" width="16" height="18" rx="2.5" stroke="url(#appGrad-compute)" stroke-width="1.8" fill="none"/>
+              <rect x="7" y="6" width="10" height="3.5" rx="0.8" stroke="url(#appGrad-compute)" stroke-width="1.5" fill="none"/>
+              <circle cx="8.5" cy="13" r="0.95" fill="url(#appGrad-compute)"/>
+              <circle cx="12" cy="13" r="0.95" fill="url(#appGrad-compute)"/>
+              <circle cx="15.5" cy="13" r="0.95" fill="url(#appGrad-compute)"/>
+              <circle cx="8.5" cy="16.5" r="0.95" fill="url(#appGrad-compute)"/>
+              <circle cx="12" cy="16.5" r="0.95" fill="url(#appGrad-compute)"/>
+              <circle cx="15.5" cy="16.5" r="0.95" fill="url(#appGrad-compute)"/>
             </svg>
           </div>
           <span class="app-badge">v 1.0</span>
         </div>
-        <h2 class="app-name">COMPUTE</h2>
+        <h2 class="app-name">Nexora</h2>
         <p class="app-tag">{{ 'buero.app.compute' | t }}</p>
-        <div class="app-pulse" aria-hidden="true"></div>
       </article>
     </div>
 

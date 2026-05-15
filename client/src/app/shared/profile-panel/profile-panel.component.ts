@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService, NAME_COOLDOWN_MS } from '../../services/auth.service';
+import { AuthService, NAME_COOLDOWN_MS, buildInternalEmail } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { RanksService } from '../../services/ranks.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
@@ -24,12 +24,30 @@ export class ProfilePanelComponent implements OnDestroy {
 
   readonly user = this.auth.user;
   readonly isAdmin = this.auth.isAdmin;
+  readonly internalEmail = this.auth.internalEmail;
   readonly open = this.overlayService.profileOpen;
 
   readonly figurePickerOpen = signal(false);
   readonly nameEditOpen = signal(false);
   readonly deleteConfirming = signal(false);
   readonly nameInput = signal('');
+  readonly emailInfoOpen = signal(false);
+
+  /** Live: ist der gerade eingetippte Name schon (von jemand anderem) vergeben? */
+  readonly nameTaken = computed(() => {
+    const candidate = this.nameInput().trim();
+    const u = this.user();
+    if (!candidate || !u) return false;
+    if (candidate === u.username) return false;       // unverändert → ok
+    return this.auth.isInternalEmailTakenForOther(candidate, u.email);
+  });
+
+  /** Vorschau-internalEmail während des Tippens. */
+  readonly previewEmail = computed(() => {
+    const candidate = this.nameInput().trim();
+    if (!candidate) return '';
+    return buildInternalEmail(candidate);
+  });
 
   readonly figures: Figure[] = [
     { key: 'default', nameKey: 'profile.figure.standard' },
@@ -109,9 +127,17 @@ export class ProfilePanelComponent implements OnDestroy {
     event.preventDefault();
     const newName = this.nameInput().trim();
     if (!newName) return;
+    if (this.nameTaken()) return;
     if (this.auth.changeName(newName)) {
       this.nameEditOpen.set(false);
     }
+  }
+
+  toggleEmailInfo(): void {
+    this.emailInfoOpen.update(v => !v);
+  }
+  closeEmailInfo(): void {
+    this.emailInfoOpen.set(false);
   }
 
   selectRank(rank: string): void {
